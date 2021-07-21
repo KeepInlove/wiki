@@ -1,9 +1,14 @@
 package com.gxy.wiki.controller;
 
+import com.gxy.wiki.domain.Test;
+import com.gxy.wiki.service.TestService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * @author GUO
@@ -16,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 //@Controller 返回一个页面
 public class TestController {
 
+    @Autowired
+    private TestService testService;
     @Value("${test.hello}")
     private String testHello;
     /**
@@ -32,6 +39,10 @@ public class TestController {
     @GetMapping("/hello")
     public String hello(){
         return "hello API! "+testHello;
+    }
+    @GetMapping("/list")
+    public List<Test> list(){
+        return testService.list();
     }
     @PostMapping("/helloPost")
     public String helloPost(String name){
