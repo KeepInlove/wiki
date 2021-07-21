@@ -11,8 +11,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class WikiApplication {
 
     private static final Logger log = LoggerFactory.getLogger(WikiApplication.class);
-
-
     public static void main(String[] args) {
         SpringApplication app=new SpringApplication(WikiApplication.class);
         Environment env = app.run(args).getEnvironment();
