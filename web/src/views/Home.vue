@@ -43,7 +43,9 @@
         </a-sub-menu>
       </a-menu>
     </a-layout-sider>
-    <a-layout-content :style="{ background: '#fff', padding: '24px', margin: 0, minHeight: '280px' }">
+
+    <a-layout-content :style="{ padding: '24px', margin: 0, minHeight: '280px' }">
+        <a-card >
         <a-list item-layout="vertical" size="large"  :data-source="ebooks" :grid="{ gutter: 20, column: 3 }">
             <template #renderItem="{ item }">
                 <a-list-item key="item.name">
@@ -63,6 +65,7 @@
                 </a-list-item>
             </template>
         </a-list>
+        </a-card>
     </a-layout-content>
  </a-layout>
 </template>
@@ -71,19 +74,19 @@
 import { defineComponent ,onMounted,ref,reactive,toRef} from 'vue';
 import axios from 'axios'
 // @ is an alias to /src
-const listData: Record<string, string>[] = [];
-
-for (let i = 0; i < 9; i++) {
-    listData.push({
-        href: 'https://www.antdv.com/',
-        title: `ant design vue part ${i}`,
-        avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png',
-        description:
-            'Ant Design, a design language for background applications, is refined by Ant UED Team.',
-        content:
-            'We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.',
-    });
-}
+// const listData: Record<string, string>[] = [];
+//
+// for (let i = 0; i < 9; i++) {
+//     listData.push({
+//         href: 'https://www.antdv.com/',
+//         title: `ant design vue part ${i}`,
+//         avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png',
+//         description:
+//             'Ant Design, a design language for background applications, is refined by Ant UED Team.',
+//         content:
+//             'We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.',
+//     });
+// }
 export default defineComponent({
   name: 'Home',
   setup(){
@@ -91,12 +94,12 @@ export default defineComponent({
     const ebooks=ref();
     const ebooks1=reactive({books:[]});
     onMounted(()=> {
-        console.log('onMounted');
-        axios.get("http://localhost:8880/ebook/list").then((res)=>{
+        // console.log('onMounted');
+        axios.get("/ebook/list").then((res)=>{
             const data=res.data;
             ebooks.value=data.content
             ebooks1.books=data.content
-            console.log(ebooks)
+            // console.log(res)
         });
     });
     //   const pagination = {
@@ -112,7 +115,7 @@ export default defineComponent({
       ];
       return{
           ebooks,
-          listData,
+          // listData,
           // pagination,
           actions,
       }
