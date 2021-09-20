@@ -47,10 +47,10 @@
     import { defineComponent, onMounted, ref } from 'vue';
     import axios from 'axios';
     import { message } from 'ant-design-vue';
-    // import {Tool} from "@/util/tool";
+    import {Tool} from "@/util/tool";
     export default {
         name: "AdminEbook",
-        setup(){
+        setup() {
             const param = ref();
             param.value = {};
             const ebooks = ref();
@@ -93,49 +93,171 @@
                     slots: { customRender: 'action' }
                 }
             ];
-            return{
+
+            /**
+             * 数据查询
+             **/
+            const handleQuery = (params: any) => {
+                loading.value = true;
+                // 如果不清空现有数据，则编辑保存重新加载数据后，再点编辑，则列表显示的还是编辑前的数据
+                ebooks.value = [];
+                axios.get("/ebook/list", {
+                    params: {
+                        page: params.page,
+                        size: params.size,
+                        name: param.value.name
+                    }
+                }).then((response) => {
+                    loading.value = false;
+                    const data = response.data;
+                    if (data.success) {
+                        ebooks.value = data.content.list;
+
+                        // 重置分页按钮
+                        pagination.value.current = params.page;
+                        pagination.value.total = data.content.total;
+                    } else {
+                        message.error(data.message);
+                    }
+                });
+            };
+
+            /**
+             * 表格点击页码时触发
+             */
+            const handleTableChange = (pagination: any) => {
+                console.log("看看自带的分页参数都有啥：" + pagination);
+                handleQuery({
+                    page: pagination.current,
+                    size: pagination.pageSize
+                });
+            };
+
+            // -------- 表单 ---------
+            /**
+             * 数组，[100, 101]对应：前端开发 / Vue
+             */
+            const categoryIds = ref();
+            const ebook = ref();
+            const modalVisible = ref(false);
+            const modalLoading = ref(false);
+            const handleModalOk = () => {
+                modalLoading.value = true;
+                ebook.value.category1Id = categoryIds.value[0];
+                ebook.value.category2Id = categoryIds.value[1];
+                axios.post("/ebook/save", ebook.value).then((response) => {
+                    modalLoading.value = false;
+                    const data = response.data; // data = commonResp
+                    if (data.success) {
+                        modalVisible.value = false;
+
+                        // 重新加载列表
+                        handleQuery({
+                            page: pagination.value.current,
+                            size: pagination.value.pageSize,
+                        });
+                    } else {
+                        message.error(data.message);
+                    }
+                });
+            };
+
+            /**
+             * 编辑
+             */
+            const edit = (record: any) => {
+                modalVisible.value = true;
+                ebook.value = Tool.copy(record);
+                categoryIds.value = [ebook.value.category1Id, ebook.value.category2Id]
+            };
+
+            /**
+             * 新增
+             */
+            const add = () => {
+                modalVisible.value = true;
+                ebook.value = {};
+            };
+
+            const handleDelete = (id: number) => {
+                axios.delete("/ebook/delete/" + id).then((response) => {
+                    const data = response.data; // data = commonResp
+                    if (data.success) {
+                        // 重新加载列表
+                        handleQuery({
+                            page: pagination.value.current,
+                            size: pagination.value.pageSize,
+                        });
+                    } else {
+                        message.error(data.message);
+                    }
+                });
+            };
+
+            const level1 =  ref();
+            let categorys: any;
+            /**
+             * 查询所有分类
+             **/
+            const handleQueryCategory = () => {
+                loading.value = true;
+                axios.get("/category/all").then((response) => {
+                    loading.value = false;
+                    const data = response.data;
+                    if (data.success) {
+                        categorys = data.content;
+                        console.log("原始数组：", categorys);
+
+                        level1.value = [];
+                        level1.value = Tool.array2Tree(categorys, 0);
+                        console.log("树形结构：", level1.value);
+
+                        // 加载完分类后，再加载电子书，否则如果分类树加载很慢，则电子书渲染会报错
+                        handleQuery({
+                            page: 1,
+                            size: pagination.value.pageSize,
+                        });
+                    } else {
+                        message.error(data.message);
+                    }
+                });
+            };
+
+            const getCategoryName = (cid: number) => {
+                // console.log(cid)
+                let result = "";
+                categorys.forEach((item: any) => {
+                    if (item.id === cid) {
+                        // return item.name; // 注意，这里直接return不起作用
+                        result = item.name;
+                    }
+                });
+                return result;
+            };
+
+            onMounted(() => {
+                handleQueryCategory();
+            });
+
+            return {
                 param,
-                ebooks:[
-                    {
-                        "id": 1,
-                        "name": "JavaScript 入门教程",
-                        "category1Id": null,
-                        "category2Id": null,
-                        "description": "零基础入门 Java 开发，企业级应用开发最佳首选框架",
-                        "cover": "/image/cover2.png",
-                        "docCount": 0,
-                        "viewCount": 0,
-                        "voteCount": 0
-                    },
-                    {
-                        "id": 2,
-                        "name": "Vue 入门教程",
-                        "category1Id": null,
-                        "category2Id": null,
-                        "description": "零基础入门 Vue 开发，企业级应用开发最佳首选框架",
-                        "cover": "/image/cover1.png",
-                        "docCount": 0,
-                        "viewCount": 0,
-                        "voteCount": 0
-                    }],
+                ebooks,
                 pagination,
                 columns,
                 loading,
-                // handleTableChange,
-                // handleQuery,
-                // getCategoryName,
-                //
-                // edit,
-                // add,
-                //
-                // ebook,
-                // modalVisible,
-                // modalLoading,
-                // handleModalOk,
-                // categoryIds,
-                // level1,
-                //
-                // handleDelete
+                handleTableChange,
+                handleQuery,
+                getCategoryName,
+                edit,
+                add,
+                ebook,
+                modalVisible,
+                modalLoading,
+                handleModalOk,
+                categoryIds,
+                level1,
+
+                handleDelete
             }
         }
     }
