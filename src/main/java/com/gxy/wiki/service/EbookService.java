@@ -1,5 +1,6 @@
 package com.gxy.wiki.service;
 
+import com.github.pagehelper.PageHelper;
 import com.gxy.wiki.domain.Ebook;
 import com.gxy.wiki.domain.EbookExample;
 import com.gxy.wiki.mapper.EbookMapper;
@@ -23,6 +24,7 @@ public class EbookService {
     @Autowired
     private EbookMapper ebookMapper;
     public List<EbookResp>list(EbookReq req){
+        PageHelper.startPage(1,3);
         EbookExample ebookExample = new EbookExample();
         EbookExample.Criteria criteria = ebookExample.createCriteria();
         if(!ObjectUtils.isEmpty(req.getName())) {
