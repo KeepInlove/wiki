@@ -6,7 +6,7 @@ package com.gxy.wiki.req;
  * @Description TODO
  * @Date 2021/7/24 19:22
  */
-public class EbookReq {
+public class EbookReq extends PageReq {
     private Long id;
 
     private String name;
