@@ -56,7 +56,7 @@
             const ebooks = ref();
             const pagination = ref({
                 current: 1,
-                pageSize: 10,
+                pageSize: 4,
                 total: 0
             });
             const loading = ref(false);
@@ -102,6 +102,7 @@
                 // 如果不清空现有数据，则编辑保存重新加载数据后，再点编辑，则列表显示的还是编辑前的数据
                 ebooks.value = [];
                 axios.get("/ebook/list", {
+//固定的params
                     params: {
                         page: params.page,
                         size: params.size,
@@ -236,7 +237,11 @@
             };
 
             onMounted(() => {
-                handleQueryCategory();
+                // handleQueryCategory();
+                handleQuery({
+                    page:1,
+                    size:pagination.value.pageSize
+                })
             });
 
             return {
