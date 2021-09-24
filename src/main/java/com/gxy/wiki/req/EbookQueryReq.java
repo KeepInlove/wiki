@@ -2,11 +2,11 @@ package com.gxy.wiki.req;
 
 /**
  * @author GUO
- * @Classname EbookReq
+ * @Classname EbookQueryReq
  * @Description TODO
  * @Date 2021/7/24 19:22
  */
-public class EbookReq extends PageReq {
+public class EbookQueryReq extends PageReq {
     private Long id;
 
     private String name;

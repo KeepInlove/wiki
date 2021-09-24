@@ -71,7 +71,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent ,onMounted,ref,reactive,toRef} from 'vue';
+import { defineComponent ,onMounted,ref} from 'vue';
 import axios from 'axios'
 // @ is an alias to /src
 // const listData: Record<string, string>[] = [];
@@ -92,15 +92,20 @@ export default defineComponent({
   setup(){
     console.log('setup');
     const ebooks=ref();
-    const ebooks1=reactive({books:[]});
+    // const ebooks1=reactive({books:[]});
     onMounted(()=> {
         // // console.log('onMounted');
-        // axios.get("/ebook/list").then((res)=>{
-        //     const data=res.data;
-        //     ebooks.value=data.content;
-        //     ebooks1.books=data.content;
-        //     // console.log(res)
-        // });
+        axios.get("/ebook/list",{
+            params:{
+                page:1,
+                size:1000
+            }
+        }).then((res)=>{
+            const data=res.data;
+            ebooks.value=data.content.list;
+            // ebooks1.books=data.content.list;
+            // console.log(res)
+        });
     });
     //   const pagination = {
     //       onChange: (page: number) => {

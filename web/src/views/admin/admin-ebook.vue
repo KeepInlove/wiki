@@ -41,6 +41,30 @@
             </a-table>
         </a-layout-content>
     </a-layout>
+    <a-modal
+            title="电子书表单"
+            v-model:visible="modalVisible"
+            :confirm-loading="modalLoading"
+            @ok="handleModalOk"
+    >
+        <a-form :model="ebook" :label-col="{span:6}" :wrapper-col="wrapperCol">
+            <a-form-item label="封面">
+                <a-input v-model:value="ebook.cover"/>
+            </a-form-item>
+            <a-form-item label="名称">
+                <a-input v-model:value="ebook.name"/>
+            </a-form-item>
+            <a-form-item label="分类一">
+                <a-input v-model:value="ebook.category1Id"/>
+            </a-form-item>
+            <a-form-item label="分类二">
+                <a-input v-model:value="ebook.category2Id"/>
+            </a-form-item>
+            <a-form-item label="描述">
+                <a-input v-model:value="ebook.description" type="text"/>
+            </a-form-item>
+        </a-form>
+    </a-modal>
 </template>
 
 <script lang="ts">
@@ -144,14 +168,17 @@
             const modalLoading = ref(false);
             const handleModalOk = () => {
                 modalLoading.value = true;
-                ebook.value.category1Id = categoryIds.value[0];
+                // setTimeout(()=>{
+                //     modalVisible.value=false;
+                //     modalLoading.value = false;
+                // },2000)
+                // ebook.value.category1Id = categoryIds.value[0];
                 ebook.value.category2Id = categoryIds.value[1];
                 axios.post("/ebook/save", ebook.value).then((response) => {
                     modalLoading.value = false;
                     const data = response.data; // data = commonResp
                     if (data.success) {
                         modalVisible.value = false;
-
                         // 重新加载列表
                         handleQuery({
                             page: pagination.value.current,

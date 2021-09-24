@@ -1,6 +1,12 @@
-package com.gxy.wiki.resp;
+package com.gxy.wiki.req;
 
-public class EbookResp {
+/**
+ * @author GUO
+ * @Classname EbookSaveReq
+ * @Description TODO
+ * @Date 2021/9/24 23:33
+ */
+public class EbookSaveReq {
     private Long id;
 
     private String name;
