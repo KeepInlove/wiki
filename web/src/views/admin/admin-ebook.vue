@@ -2,6 +2,11 @@
 
     <a-layout>
         <a-layout-content :style="{ padding: '24px', margin: 0, minHeight: '280px' }">
+            <p>
+                <a-button type="primary" @click="add()" size="large">
+                    新增
+                </a-button>
+            </p>
             <a-table
                     :columns="columns"
                     :row-key="record => record.id"
@@ -47,7 +52,7 @@
             :confirm-loading="modalLoading"
             @ok="handleModalOk"
     >
-        <a-form :model="ebook" :label-col="{span:6}" :wrapper-col="wrapperCol">
+        <a-form :model="ebook" :label-col="{span:6}" :wrapper-col="{spin:18}">
             <a-form-item label="封面">
                 <a-input v-model:value="ebook.cover"/>
             </a-form-item>
@@ -80,11 +85,10 @@
             const ebooks = ref();
             const pagination = ref({
                 current: 1,
-                pageSize: 4,
+                pageSize: 5,
                 total: 0
             });
             const loading = ref(false);
-
             const columns = [
                 {
                     title: '封面',
@@ -173,7 +177,7 @@
                 //     modalLoading.value = false;
                 // },2000)
                 // ebook.value.category1Id = categoryIds.value[0];
-                ebook.value.category2Id = categoryIds.value[1];
+                // ebook.value.category2Id = categoryIds.value[1];
                 axios.post("/ebook/save", ebook.value).then((response) => {
                     modalLoading.value = false;
                     const data = response.data; // data = commonResp
@@ -194,6 +198,7 @@
              * 编辑
              */
             const edit = (record: any) => {
+                //弹出model
                 modalVisible.value = true;
                 ebook.value = Tool.copy(record);
                 categoryIds.value = [ebook.value.category1Id, ebook.value.category2Id]
@@ -203,6 +208,7 @@
              * 新增
              */
             const add = () => {
+                //弹出model
                 modalVisible.value = true;
                 ebook.value = {};
             };

@@ -10,11 +10,13 @@ import com.gxy.wiki.req.EbookSaveReq;
 import com.gxy.wiki.resp.EbookQueryResp;
 import com.gxy.wiki.resp.PageResp;
 import com.gxy.wiki.utils.CopyUtil;
+import com.gxy.wiki.utils.SnowFlake;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -28,7 +30,9 @@ import java.util.List;
 public class EbookService {
     @Autowired
     private EbookMapper ebookMapper;
-    public PageResp<EbookQueryResp> list(EbookQueryReq req){
+    @Autowired
+    private SnowFlake snowFlake;
+    public PageResp<EbookQueryResp> list(@Valid EbookQueryReq req){
         EbookExample ebookExample = new EbookExample();
         EbookExample.Criteria criteria = ebookExample.createCriteria();
         if(!ObjectUtils.isEmpty(req.getName())) {
@@ -66,10 +70,15 @@ public class EbookService {
         Ebook ebook=CopyUtil.copy(req,Ebook.class);
         if (ObjectUtils.isEmpty(req.getId())){
             //新增
+            ebook.setId(snowFlake.nextId());
             ebookMapper.insert(ebook);
         }else {
             //更新
             ebookMapper.updateByPrimaryKey(ebook);
         }
+    }
+
+    public void delete(Long id) {
+        ebookMapper.deleteByPrimaryKey(id);
     }
 }

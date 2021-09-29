@@ -1,13 +1,21 @@
 package com.gxy.wiki.req;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.NotNull;
+
 /**
  * @author GUO
  * @Classname PageReq
  * @Description TODO
  * @Date 2021/9/22 23:00
  */
+
 public class PageReq {
+
+    @NotNull(message = "【页码】不能为空")
     private int page;
+    @NotNull(message = "【每页条数】不能为空")
+    @Max(value = 200,message ="【每页条数】不能超过200" )
     private int size;
 
     public int getPage() {

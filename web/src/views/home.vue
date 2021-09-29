@@ -124,7 +124,7 @@ export default defineComponent({
           // pagination,
           actions,
       }
-  }
+  },
 });
 </script>
 <style scoped>

@@ -1,6 +1,7 @@
 package com.gxy.wiki.resp;
 
 public class EbookQueryResp {
+
     private Long id;
 
     private String name;
