@@ -23,7 +23,7 @@
             <a-table
                     :columns="columns"
                     :row-key="record => record.id"
-                    :data-source="ebooks"
+                    :data-source="categorys"
                     :pagination="pagination"
                     :loading="loading"
                     @change="handleTableChange"
@@ -36,7 +36,7 @@
                 </template>
                 <template v-slot:action="{ text, record }">
                     <a-space size="small">
-                        <router-link :to="'/admin/doc?ebookId=' + record.id">
+                        <router-link :to="'/admin/doc?categoryId=' + record.id">
                             <a-button type="primary">
                                 文档管理
                             </a-button>
@@ -60,27 +60,22 @@
         </a-layout-content>
     </a-layout>
     <a-modal
-            title="电子书表单"
+            title="分类表单"
             v-model:visible="modalVisible"
             :confirm-loading="modalLoading"
             @ok="handleModalOk"
     >
-        <a-form :model="ebook" :label-col="{span:6}" :wrapper-col="{spin:18}">
-            <a-form-item label="封面">
-                <a-input v-model:value="ebook.cover"/>
-            </a-form-item>
+        <a-form :model="category" :label-col="{span:6}" :wrapper-col="{spin:18}">
             <a-form-item label="名称">
-                <a-input v-model:value="ebook.name"/>
+                <a-input v-model:value="category.name"/>
             </a-form-item>
-<!--            <a-form-item label="分类一">-->
-<!--                <a-input v-model:value="ebook.category1Id"/>-->
-<!--            </a-form-item>-->
-<!--            <a-form-item label="分类二">-->
-<!--                <a-input v-model:value="ebook.category2Id"/>-->
-<!--            </a-form-item>-->
-            <a-form-item label="描述">
-                <a-input v-model:value="ebook.description" type="text"/>
+            <a-form-item label="父分类">
+                <a-input v-model:value="category.parent"/>
             </a-form-item>
+            <a-form-item label="顺序">
+                <a-input v-model:value="category.sort"/>
+            </a-form-item>
+
         </a-form>
     </a-modal>
 </template>
@@ -91,11 +86,11 @@
     import { message } from 'ant-design-vue';
     import {Tool} from "@/util/tool";
     export default {
-        name: "AdminEbook",
+        name: "AdminCategory",
         setup() {
             const param = ref();
             param.value = {};
-            const ebooks = ref();
+            const categorys = ref();
             const pagination = ref({
                 current: 1,
                 pageSize: 5,
@@ -104,30 +99,19 @@
             const loading = ref(false);
             const columns = [
                 {
-                    title: '封面',
-                    dataIndex: 'cover',
-                    slots: { customRender: 'cover' }
-                },
-                {
                     title: '名称',
                     dataIndex: 'name'
                 },
                 {
-                    title: '分类',
-                    slots: { customRender: 'category' }
+                    title: '父分类',
+                    key:'parent',
+                    dataIndex: 'parent'
                 },
                 {
-                    title: '文档数',
-                    dataIndex: 'docCount'
+                    title: '顺序',
+                    dataIndex: 'sort'
                 },
-                {
-                    title: '阅读数',
-                    dataIndex: 'viewCount'
-                },
-                {
-                    title: '点赞数',
-                    dataIndex: 'voteCount'
-                },
+
                 {
                     title: 'Action',
                     key: 'action',
@@ -141,8 +125,8 @@
             const handleQuery = (params: any) => {
                 loading.value = true;
                 // 如果不清空现有数据，则编辑保存重新加载数据后，再点编辑，则列表显示的还是编辑前的数据
-                ebooks.value = [];
-                axios.get("/ebook/list", {
+                categorys.value = [];
+                axios.get("/category/list", {
 //固定的params
                     params: {
                         page: params.page,
@@ -153,7 +137,7 @@
                     loading.value = false;
                     const data = response.data;
                     if (data.success) {
-                        ebooks.value = data.content.list;
+                        categorys.value = data.content.list;
 
                         // 重置分页按钮
                         pagination.value.current = params.page;
@@ -180,7 +164,7 @@
              * 数组，[100, 101]对应：前端开发 / Vue
              */
             const categoryIds = ref();
-            const ebook = ref();
+            const category = ref();
             const modalVisible = ref(false);
             const modalLoading = ref(false);
             const handleModalOk = () => {
@@ -189,9 +173,9 @@
                 //     modalVisible.value=false;
                 //     modalLoading.value = false;
                 // },2000)
-                // ebook.value.category1Id = categoryIds.value[0];
-                // ebook.value.category2Id = categoryIds.value[1];
-                axios.post("/ebook/save", ebook.value).then((response) => {
+                // category.value.category1Id = categoryIds.value[0];
+                // category.value.category2Id = categoryIds.value[1];
+                axios.post("/category/save", category.value).then((response) => {
                     modalLoading.value = false;
                     const data = response.data; // data = commonResp
                     if (data.success) {
@@ -213,8 +197,8 @@
             const edit = (record: any) => {
                 //弹出model
                 modalVisible.value = true;
-                ebook.value = Tool.copy(record);
-                categoryIds.value = [ebook.value.category1Id, ebook.value.category2Id]
+                category.value = Tool.copy(record);
+                categoryIds.value = [category.value.category1Id, category.value.category2Id]
             };
 
             /**
@@ -223,11 +207,11 @@
             const add = () => {
                 //弹出model
                 modalVisible.value = true;
-                ebook.value = {};
+                category.value = {};
             };
 
             const handleDelete = (id: number) => {
-                axios.delete("/ebook/delete/" + id).then((response) => {
+                axios.delete("/category/delete/" + id).then((response) => {
                     const data = response.data; // data = commonResp
                     if (data.success) {
                         // 重新加载列表
@@ -242,33 +226,33 @@
             };
 
             const level1 =  ref();
-            let categorys: any;
+            // let categorys: any;
             /**
              * 查询所有分类
              **/
-            const handleQueryCategory = () => {
-                loading.value = true;
-                axios.get("/category/all").then((response) => {
-                    loading.value = false;
-                    const data = response.data;
-                    if (data.success) {
-                        categorys = data.content;
-                        console.log("原始数组：", categorys);
-
-                        level1.value = [];
-                        level1.value = Tool.array2Tree(categorys, 0);
-                        console.log("树形结构：", level1.value);
-
-                        // 加载完分类后，再加载电子书，否则如果分类树加载很慢，则电子书渲染会报错
-                        handleQuery({
-                            page: 1,
-                            size: pagination.value.pageSize,
-                        });
-                    } else {
-                        message.error(data.message);
-                    }
-                });
-            };
+            // const handleQueryCategory = () => {
+            //     loading.value = true;
+            //     axios.get("/category/all").then((response) => {
+            //         loading.value = false;
+            //         const data = response.data;
+            //         if (data.success) {
+            //             categorys = data.content;
+            //             console.log("原始数组：", categorys);
+            //
+            //             level1.value = [];
+            //             level1.value = Tool.array2Tree(categorys, 0);
+            //             console.log("树形结构：", level1.value);
+            //
+            //             // 加载完分类后，再加载分类，否则如果分类树加载很慢，则分类渲染会报错
+            //             handleQuery({
+            //                 page: 1,
+            //                 size: pagination.value.pageSize,
+            //             });
+            //         } else {
+            //             message.error(data.message);
+            //         }
+            //     });
+            // };
 
             // const getCategoryName = (cid: number) => {
             //     // console.log(cid)
@@ -292,7 +276,7 @@
 
             return {
                 param,
-                ebooks,
+                categorys,
                 pagination,
                 columns,
                 loading,
@@ -301,7 +285,7 @@
                 // getCategoryName,
                 edit,
                 add,
-                ebook,
+                category,
                 modalVisible,
                 modalLoading,
                 handleModalOk,
