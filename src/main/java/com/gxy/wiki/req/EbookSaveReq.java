@@ -1,8 +1,5 @@
 package com.gxy.wiki.req;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-
 import javax.validation.constraints.NotNull;
 
 /**
@@ -13,7 +10,7 @@ import javax.validation.constraints.NotNull;
  */
 public class EbookSaveReq {
 
-    @JsonSerialize(using = ToStringSerializer.class)
+//    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
     @NotNull(message = "【名称】不能为空")

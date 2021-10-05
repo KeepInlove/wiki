@@ -1,6 +1,7 @@
 package com.gxy.wiki.domain;
 
 public class Category {
+//    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
     private Long parent;

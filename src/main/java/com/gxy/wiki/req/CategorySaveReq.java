@@ -3,6 +3,7 @@ package com.gxy.wiki.req;
 import javax.validation.constraints.NotNull;
 
 public class CategorySaveReq {
+//    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
     private Long parent;

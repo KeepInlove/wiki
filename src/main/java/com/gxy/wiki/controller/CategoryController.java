@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * @author GUO
@@ -30,6 +31,13 @@ public class CategoryController {
         PageResp<CategoryQueryResp> pageResp=categoryService.list(req);
         resp.setContent(pageResp);
        return resp;
+    }
+    @GetMapping("/all")
+    public CommonResp all(){
+        CommonResp<List<CategoryQueryResp>> resp=new CommonResp<>();
+        List<CategoryQueryResp> list=categoryService.all();
+        resp.setContent(list);
+        return resp;
     }
     @PostMapping("/save")
     public CommonResp save(@Valid @RequestBody CategorySaveReq req){
