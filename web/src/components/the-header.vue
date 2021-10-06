@@ -1,11 +1,16 @@
 <template>
-    <a-layout-header class="header">
-        <div class="logo" />
+    <a-layout-header class="header" :style="{backgroundColor:'#fff'}">
+        <div class="logo">
+            <div>
+            <img src="https://aliyuncdn.antdv.com/v2/assets/logo.1ef800a8.svg">
+            </div>
+            <h2>Ant Design Vue</h2>
+        </div>
+
         <a-menu
-                theme="dark"
+                theme="light"
                 mode="horizontal"
-                :style="{ lineHeight: '64px' }"
-        >
+                :style="{ lineHeight: '64px' ,float: 'right',fontSize:'16px'}">
             <a-menu-item key="/">
                <router-link to="/">首页</router-link>
             </a-menu-item>
@@ -29,11 +34,18 @@
     });
 </script>
 <style>
+
     .logo {
         float: left;
-        width: 120px;
-        height: 31px;
-        margin: 16px 28px 16px 0;
-        background: rgba(255, 255, 255, 0.2);
+        width: 200px;
+        height: 64px;
+        display: flex;
+        flex-flow: row;
+        text-align: center;
+        justify-content: space-between;
+    }
+    img{
+        width: 32px;
+        height: 32px;
     }
 </style>

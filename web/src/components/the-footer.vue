@@ -1,5 +1,5 @@
 <template>
-    <a-layout-footer style="text-align: center">
+    <a-layout-footer :style="{textAlign:'center',backgroundColor:'#fff'}" >
         Spring Boot + Vue3 项目 ©2021 Created by Guo
     </a-layout-footer>
 </template>

@@ -1,50 +1,28 @@
 <template>
  <a-layout>
-    <a-layout-sider width="200" style="background: #fff">
-      <a-menu
-              mode="inline"
-              :style="{ height: '100%', borderRight: 0 }"
-      >
-        <a-sub-menu key="sub1">
-          <template #title>
-              <span>
-                <user-outlined />
-                subnav 123
-              </span>
+    <a-layout-sider width="200"  :style="{background: '#fff'}">
+      <a-menu mode="inline" :style="{  height: '100%',borderRight: 0 ,}">
+         <a-menu-item>
+             <router-link :to="'/'">
+<!--                 <SmileTwoTone />-->
+<!--                 <HeartTwoTone twoToneColor="#eb2f96" />-->
+<!--                 <CheckCircleTwoTone twoToneColor="#52c41a" />-->
+                 <FolderOpenTwoTone style="fontSize:16px" />
+
+                 <span>文档目录</span>
+             </router-link>
+         </a-menu-item>
+        <a-sub-menu v-for="item in level1" :key="item.id">
+          <template v-slot:title>
+              <span>{{item.name}}</span>
           </template>
-          <a-menu-item key="1">option1</a-menu-item>
-          <a-menu-item key="2">option2</a-menu-item>
-          <a-menu-item key="3">option3</a-menu-item>
-          <a-menu-item key="4">option4</a-menu-item>
-        </a-sub-menu>
-        <a-sub-menu key="sub2">
-          <template #title>
-              <span>
-                <laptop-outlined />
-                subnav 2
-              </span>
-          </template>
-          <a-menu-item key="5">option5</a-menu-item>
-          <a-menu-item key="6">option6</a-menu-item>
-          <a-menu-item key="7">option7</a-menu-item>
-          <a-menu-item key="8">option8</a-menu-item>
-        </a-sub-menu>
-        <a-sub-menu key="sub3">
-          <template #title>
-              <span>
-                <notification-outlined />
-                subnav 3
-              </span>
-          </template>
-          <a-menu-item key="9">option9</a-menu-item>
-          <a-menu-item key="10">option10</a-menu-item>
-          <a-menu-item key="11">option11</a-menu-item>
-          <a-menu-item key="12">option12</a-menu-item>
+          <a-menu-item v-for="child in item.children" :key="child.id">
+              <span>{{child.name}}</span>
+          </a-menu-item>
         </a-sub-menu>
       </a-menu>
     </a-layout-sider>
-
-    <a-layout-content :style="{ padding: '24px', margin: 0, minHeight: '280px' }">
+    <a-layout-content :style="{ padding: '24px', margin: 0, minHeight: '280px' ,height: '100%' }">
         <a-card >
         <a-list item-layout="vertical" size="large"  :data-source="ebooks" :grid="{ gutter: 20, column: 3 }">
             <template #renderItem="{ item }">
@@ -72,28 +50,36 @@
 
 <script lang="ts">
 import { defineComponent ,onMounted,ref} from 'vue';
+import {message} from "ant-design-vue";
+import {Tool} from "@/util/tool";
 import axios from 'axios'
-// @ is an alias to /src
-// const listData: Record<string, string>[] = [];
-//
-// for (let i = 0; i < 9; i++) {
-//     listData.push({
-//         href: 'https://www.antdv.com/',
-//         title: `ant design vue part ${i}`,
-//         avatar: 'https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png',
-//         description:
-//             'Ant Design, a design language for background applications, is refined by Ant UED Team.',
-//         content:
-//             'We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.',
-//     });
-// }
 export default defineComponent({
   name: 'Home',
   setup(){
     console.log('setup');
     const ebooks=ref();
     // const ebooks1=reactive({books:[]});
+      const level1 =  ref();
+      let categorys: any;
+      //查询所有分类
+      const handleQueryCategory = () => {
+          axios.get("/category/all").then((response) => {
+              const data = response.data;
+              if (data.success) {
+                  categorys = data.content;
+                  console.log("原始数组：", categorys);
+
+                  level1.value = [];
+                  level1.value = Tool.array2Tree(categorys, 0);
+                  console.log("树形结构：", level1.value);
+                  // 加载完分类后，再加载电子书，否则如果分类树加载很慢，则电子书渲染会报错
+              } else {
+                  message.error(data.message);
+              }
+          });
+      };
     onMounted(()=> {
+        handleQueryCategory();
         // // console.log('onMounted');
         axios.get("/ebook/list",{
             params:{
@@ -119,9 +105,11 @@ export default defineComponent({
           { type: 'MessageOutlined', text: '66' },
       ];
       return{
+          level1,
           ebooks,
           // listData,
           // pagination,
+          handleQueryCategory,
           actions,
       }
   },
@@ -135,4 +123,7 @@ export default defineComponent({
         border-radius: 8%;
         margin: 5px 0;
     }
+    /*.site-layout-background {*/
+    /*    background: #fff;*/
+    /*}*/
 </style>

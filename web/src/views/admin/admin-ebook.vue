@@ -71,10 +71,10 @@
                 <a-input v-model:value="ebook.name"/>
             </a-form-item>
 
-            <a-form-item label="分类一">
+            <a-form-item label="分类">
                 <a-cascader v-model:value="categoryIds"
                             :field-names="{label:'name',value:'id',children:'children'}"
-                            :options="level1" placeholder="Please select" />
+                            :options="level1" />
 <!--                <a-input v-model:value="ebook.category1Id"/>-->
             </a-form-item>
 <!--            <a-form-item label="分类二">-->
@@ -213,6 +213,8 @@
             const add = () => {
                 //弹出model
                 modalVisible.value = true;
+                //清空复选框
+                categoryIds.value=[];
                 ebook.value = {};
             };
 
