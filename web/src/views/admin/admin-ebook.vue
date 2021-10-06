@@ -13,7 +13,7 @@
                         </a-button>
                     </a-form-item>
                     <a-form-item>
-                        <a-button type="primary" @click="add()" >
+                        <a-button @click="add()" type="primary">
                             新增
                         </a-button>
                     </a-form-item>
@@ -26,21 +26,21 @@
                     :data-source="ebooks"
                     :pagination="pagination"
                     :loading="loading"
-                    @change="handleTableChange"
-            >
+                    @change="handleTableChange">
                 <template #cover="{ text: cover }">
                     <img v-if="cover" :src="cover" alt="avatar" />
                 </template>
                 <template v-slot:category="{ text, record }">
-<!--                    <span>{{ getCategoryName(record.category1Id) }} / {{ getCategoryName(record.category2Id) }}</span>-->
+<!--                   {{text}}}**** {{record}}-->
+                    <span>{{ getCategoryName(record.category1Id) }} / {{ getCategoryName(record.category2Id) }}</span>
                 </template>
                 <template v-slot:action="{ text, record }">
                     <a-space size="small">
-                        <router-link :to="'/admin/doc?ebookId=' + record.id">
-                            <a-button type="primary">
-                                文档管理
-                            </a-button>
-                        </router-link>
+<!--                        <router-link :to="'/admin/doc?ebookId=' + record.id">-->
+<!--                            <a-button type="primary">-->
+<!--                                文档管理-->
+<!--                            </a-button>-->
+<!--                        </router-link>-->
                         <a-button type="primary" @click="edit(record)">
                             编辑
                         </a-button>
@@ -48,9 +48,8 @@
                                 title="删除后不可恢复，确认删除?"
                                 ok-text="是"
                                 cancel-text="否"
-                                @confirm="handleDelete(record.id)"
-                        >
-                            <a-button type="danger">
+                                @confirm="handleDelete(record.id)">
+                            <a-button type="primary" danger>
                                 删除
                             </a-button>
                         </a-popconfirm>
@@ -63,8 +62,7 @@
             title="电子书表单"
             v-model:visible="modalVisible"
             :confirm-loading="modalLoading"
-            @ok="handleModalOk"
-    >
+            @ok="handleModalOk">
         <a-form :model="ebook" :label-col="{span:6}" :wrapper-col="{spin:18}">
             <a-form-item label="封面">
                 <a-input v-model:value="ebook.cover"/>
@@ -72,9 +70,13 @@
             <a-form-item label="名称">
                 <a-input v-model:value="ebook.name"/>
             </a-form-item>
-<!--            <a-form-item label="分类一">-->
+
+            <a-form-item label="分类一">
+                <a-cascader v-model:value="categoryIds"
+                            :field-names="{label:'name',value:'id',children:'children'}"
+                            :options="level1" placeholder="Please select" />
 <!--                <a-input v-model:value="ebook.category1Id"/>-->
-<!--            </a-form-item>-->
+            </a-form-item>
 <!--            <a-form-item label="分类二">-->
 <!--                <a-input v-model:value="ebook.category2Id"/>-->
 <!--            </a-form-item>-->
@@ -135,15 +137,13 @@
                 }
             ];
 
-            /**
-             * 数据查询
-             **/
+            //数据查询
             const handleQuery = (params: any) => {
                 loading.value = true;
                 // 如果不清空现有数据，则编辑保存重新加载数据后，再点编辑，则列表显示的还是编辑前的数据
                 ebooks.value = [];
                 axios.get("/ebook/list", {
-//固定的params
+                    //固定的params
                     params: {
                         page: params.page,
                         size: params.size,
@@ -164,9 +164,8 @@
                 });
             };
 
-            /**
-             * 表格点击页码时触发
-             */
+
+              //表格点击页码时触发
             const handleTableChange = (pagination: any) => {
                 console.log("看看自带的分页参数都有啥：" + pagination);
                 handleQuery({
@@ -176,21 +175,17 @@
             };
 
             // -------- 表单 ---------
-            /**
-             * 数组，[100, 101]对应：前端开发 / Vue
-             */
+
+            // 数组，[100, 101]对应：前端开发 / Vue
+
             const categoryIds = ref();
             const ebook = ref();
             const modalVisible = ref(false);
             const modalLoading = ref(false);
             const handleModalOk = () => {
                 modalLoading.value = true;
-                // setTimeout(()=>{
-                //     modalVisible.value=false;
-                //     modalLoading.value = false;
-                // },2000)
-                // ebook.value.category1Id = categoryIds.value[0];
-                // ebook.value.category2Id = categoryIds.value[1];
+                ebook.value.category1Id = categoryIds.value[0];
+                ebook.value.category2Id = categoryIds.value[1];
                 axios.post("/ebook/save", ebook.value).then((response) => {
                     modalLoading.value = false;
                     const data = response.data; // data = commonResp
@@ -206,10 +201,7 @@
                     }
                 });
             };
-
-            /**
-             * 编辑
-             */
+            // 编辑;
             const edit = (record: any) => {
                 //弹出model
                 modalVisible.value = true;
@@ -217,9 +209,7 @@
                 categoryIds.value = [ebook.value.category1Id, ebook.value.category2Id]
             };
 
-            /**
-             * 新增
-             */
+            // 新增;
             const add = () => {
                 //弹出model
                 modalVisible.value = true;
@@ -243,9 +233,8 @@
 
             const level1 =  ref();
             let categorys: any;
-            /**
-             * 查询所有分类
-             **/
+
+             //查询所有分类
             const handleQueryCategory = () => {
                 loading.value = true;
                 axios.get("/category/all").then((response) => {
@@ -270,20 +259,20 @@
                 });
             };
 
-            // const getCategoryName = (cid: number) => {
-            //     // console.log(cid)
-            //     let result = "";
-            //     categorys.forEach((item: any) => {
-            //         if (item.id === cid) {
-            //             // return item.name; // 注意，这里直接return不起作用
-            //             result = item.name;
-            //         }
-            //     });
-            //     return result;
-            // };
+            const getCategoryName = (cid: number) => {
+                // console.log(cid)
+                let result = "";
+                categorys.forEach((item: any) => {
+                    if (item.id === cid) {
+                        // return item.name; // 注意，这里直接return不起作用
+                        result = item.name;
+                    }
+                });
+                return result;
+            };
 
             onMounted(() => {
-                // handleQueryCategory();
+                handleQueryCategory();
                 handleQuery({
                     page:1,
                     size:pagination.value.pageSize
@@ -296,19 +285,20 @@
                 pagination,
                 columns,
                 loading,
-                handleTableChange,
-                handleQuery,
-                // getCategoryName,
-                edit,
-                add,
                 ebook,
                 modalVisible,
                 modalLoading,
-                handleModalOk,
                 categoryIds,
                 level1,
 
-                handleDelete
+                edit,
+                add,
+                handleQuery,
+                getCategoryName,
+                handleTableChange,
+                handleModalOk,
+                handleDelete,
+
             }
         }
     }

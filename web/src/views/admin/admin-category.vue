@@ -5,7 +5,7 @@
             <p>
                 <a-form layout="inline" :model="param">
                     <a-form-item>
-                        <a-button type="primary" @click="add()" >
+                        <a-button type="primary" @click="add()">
                             新增
                         </a-button>
                     </a-form-item>
@@ -19,7 +19,7 @@
                     :pagination="false"
                     :loading="loading">
                 <template #cover="{ text: cover }">
-                    <img v-if="cover" :src="cover" alt="avatar" />
+                    <img v-if="cover" :src="cover" alt="avatar"/>
                 </template>
                 <template v-slot:category="{ text, record }">
 <!--                    <span>{{ getCategoryName(record.category1Id) }} / {{ getCategoryName(record.category2Id) }}</span>-->
@@ -36,7 +36,7 @@
                                 cancel-text="否"
                                 @confirm="handleDelete(record.id)"
                         >
-                            <a-button type="danger">
+                            <a-button type="primary" danger>
                                 删除
                             </a-button>
                         </a-popconfirm>
