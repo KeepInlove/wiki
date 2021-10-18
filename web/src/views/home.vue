@@ -1,16 +1,10 @@
 <template>
- <a-layout>
-    <a-layout-sider width="200"  :style="{background: '#fff'}">
-      <a-menu mode="inline" :style="{  height: '100%',borderRight: 0 ,}">
-         <a-menu-item>
-             <router-link :to="'/'">
-<!--                 <SmileTwoTone />-->
-<!--                 <HeartTwoTone twoToneColor="#eb2f96" />-->
-<!--                 <CheckCircleTwoTone twoToneColor="#52c41a" />-->
-                 <FolderOpenTwoTone style="fontSize:16px" />
-
-                 <span>文档目录</span>
-             </router-link>
+    <a-layout>
+        <a-layout-sider width="200"  :style="{background: '#fff'}">
+         <a-menu mode="inline" :style="{  height: '100%',borderRight: 0 }" @click="handleClick">
+         <a-menu-item key="welcome">
+             <SmileTwoTone  style="fontSize:16px" />
+             <span>欢迎</span>
          </a-menu-item>
         <a-sub-menu v-for="item in level1" :key="item.id">
           <template v-slot:title>
@@ -22,30 +16,54 @@
         </a-sub-menu>
       </a-menu>
     </a-layout-sider>
-    <a-layout-content :style="{ padding: '24px', margin: 0, minHeight: '280px' ,height: '100%' }">
-        <a-card >
-        <a-list item-layout="vertical" size="large"  :data-source="ebooks" :grid="{ gutter: 20, column: 3 }">
-            <template #renderItem="{ item }">
-                <a-list-item key="item.name">
-                    <template #actions>
-                        <span v-for="{ type, text } in actions" :key="type">
-                            <component v-bind:is="type" style="margin-right: 8px" />
-                            {{ text }}
-                        </span>
-                    </template>
-                    <a-list-item-meta :description="item.description">
-                        <template #title>
-                            <a :href="item.href">{{ item.name }}</a>
+     <a-layout-content :style="{ padding: '24px', margin: 0, minHeight: '500px'}">
+            <a-card class="welcome" v-show="isShowWelcome">
+                <h1>欢迎来到首页</h1>
+            </a-card>
+            <a-card v-show="!isShowWelcome">
+                <a-list  item-layout="vertical" size="large"  :data-source="ebooks" :grid="{ gutter: 20, column: 3 }">
+                <template #renderItem="{ item }">
+                    <a-list-item key="item.name">
+                        <template #actions>
+                            <span v-for="{ type, text } in actions" :key="type">
+                                <component v-bind:is="type" style="margin-right: 8px" />
+                                {{ text }}
+                            </span>
                         </template>
-                        <template #avatar><a-avatar :src="item.cover" /></template>
-                    </a-list-item-meta>
-                    {{ item.content }}
-                </a-list-item>
-            </template>
-        </a-list>
-        </a-card>
-    </a-layout-content>
- </a-layout>
+                        <a-list-item-meta :description="item.description">
+                            <template #title>
+                                <a :href="item.href">{{ item.name }}</a>
+                            </template>
+                            <template #avatar><a-avatar :src="item.cover" /></template>
+                        </a-list-item-meta>
+                        {{ item.content }}
+                    </a-list-item>
+                </template>
+                </a-list>
+             </a-card>
+<!--            <a-card>-->
+<!--                <a-list item-layout="vertical" size="large"  :data-source="ebooks" :grid="{ gutter: 20, column: 3 }">-->
+<!--                    <template #renderItem="{ item }">-->
+<!--                        <a-list-item key="item.name">-->
+<!--                            <template #actions>-->
+<!--                            <span v-for="{ type, text } in actions" :key="type">-->
+<!--                                <component v-bind:is="type" style="margin-right: 8px" />-->
+<!--                                {{ text }}-->
+<!--                            </span>-->
+<!--                            </template>-->
+<!--                            <a-list-item-meta :description="item.description">-->
+<!--                                <template #title>-->
+<!--                                    <a :href="item.href">{{ item.name }}</a>-->
+<!--                                </template>-->
+<!--                                <template #avatar><a-avatar :src="item.cover" /></template>-->
+<!--                            </a-list-item-meta>-->
+<!--                            {{ item.content }}-->
+<!--                        </a-list-item>-->
+<!--                    </template>-->
+<!--                </a-list>-->
+<!--            </a-card>-->
+     </a-layout-content>
+    </a-layout>
 </template>
 
 <script lang="ts">
@@ -78,39 +96,48 @@ export default defineComponent({
               }
           });
       };
+      const handQueryEbook=()=>{
+         axios.get("/ebook/list",{
+             params:{
+                 page:1,
+                 size:200,
+                 categoryId2: categoryId2
+             }
+         }).then((res)=>{
+             const data=res.data;
+             ebooks.value=data.content.list;
+             // ebooks1.books=data.content.list;
+             // console.log(res)
+         });
+     };
+      const isShowWelcome=ref(true);
+      let categoryId2=0;
+      const handleClick=(value:any)=>{
+          console.log("menu click",value);
+          if (value.key==='welcome'){
+              isShowWelcome.value=true;
+          }else {
+              categoryId2=value.key;
+              isShowWelcome.value=false;
+              handQueryEbook();
+          }
+          // isShowWelcome.value = value.key === 'welcome';
+      };
     onMounted(()=> {
         handleQueryCategory();
-        // // console.log('onMounted');
-        axios.get("/ebook/list",{
-            params:{
-                page:1,
-                size:200
-            }
-        }).then((res)=>{
-            const data=res.data;
-            ebooks.value=data.content.list;
-            // ebooks1.books=data.content.list;
-            // console.log(res)
-        });
     });
-    //   const pagination = {
-    //       onChange: (page: number) => {
-    //           console.log(page);
-    //       },
-    //       pageSize: 3,
-    //   };
       const actions: Record<string, string>[] = [
           { type: 'StarOutlined', text: '123' },
           { type: 'LikeOutlined', text: '456' },
           { type: 'MessageOutlined', text: '66' },
       ];
       return{
+          handleQueryCategory,
+          handleClick,
           level1,
           ebooks,
-          // listData,
-          // pagination,
-          handleQueryCategory,
           actions,
+          isShowWelcome
       }
   },
 });

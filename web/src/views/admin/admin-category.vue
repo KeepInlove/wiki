@@ -1,5 +1,4 @@
 <template>
-
     <a-layout>
         <a-layout-content :style="{ padding: '24px', margin: 0, minHeight: '280px' }">
             <p>

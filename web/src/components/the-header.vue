@@ -4,7 +4,7 @@
             <div>
             <img src="https://aliyuncdn.antdv.com/v2/assets/logo.1ef800a8.svg">
             </div>
-            <h2>Ant Design Vue</h2>
+            <h2>Mr Freshman</h2>
         </div>
 
         <a-menu
