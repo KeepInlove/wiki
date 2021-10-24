@@ -20,8 +20,8 @@
                 <template #cover="{ text: cover }">
                     <img v-if="cover" :src="cover" alt="avatar"/>
                 </template>
-                <template v-slot:category="{ text, record }">
-<!--                    <span>{{ getCategoryName(record.category1Id) }} / {{ getCategoryName(record.category2Id) }}</span>-->
+                <template v-slot:doc="{ text, record }">
+<!--                    <span>{{ getDocName(record.doc1Id) }} / {{ getDocName(record.doc2Id) }}</span>-->
                 </template>
                 <template v-slot:action="{ text, record }">
                     <a-space size="small">
@@ -45,29 +45,29 @@
         </a-layout-content>
     </a-layout>
     <a-modal
-            title="分类表单"
+            title="文档表单"
             v-model:visible="modalVisible"
             :confirm-loading="modalLoading"
             @ok="handleModalOk"
     >
-        <a-form :model="category" :label-col="{span:6}" :wrapper-col="{spin:18}">
+        <a-form :model="doc" :label-col="{span:6}" :wrapper-col="{spin:18}">
             <a-form-item label="名称">
-                <a-input v-model:value="category.name"/>
+                <a-input v-model:value="doc.name"/>
             </a-form-item>
-            <a-form-item label="父分类">
-<!--                <a-input v-model:value="category.parent"/>-->
-                <a-select ref="select" v-model:value="category.parent">
-                    <a-select-option value="0">无</a-select-option>
-                    <a-select-option v-for="c in level1" :key="c.id" :value="c.id" :disabled="category.id===c.id">
-                        {{c.name}}
-                    </a-select-option>
-                </a-select>
-
-
-<!--                <a-input v-model:value="category.parent"/>-->
+            <a-form-item label="父文档">
+                <a-tree-select
+                        v-model:value="doc.parent"
+                        style="width: 100%"
+                        :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+                        :tree-data="treeSelectData"
+                        placeholder="请选择父文档"
+                        tree-default-expand-all
+                        :replaceFields="{title:'name', key:'id', value: 'id'}"
+                >
+                </a-tree-select>
             </a-form-item>
             <a-form-item label="顺序">
-                <a-input v-model:value="category.sort"/>
+                <a-input v-model:value="doc.sort"/>
             </a-form-item>
 
         </a-form>
@@ -80,11 +80,11 @@
     import { message } from 'ant-design-vue';
     import {Tool} from "@/util/tool";
     export default {
-        name: "AdminCategory",
+        name: "AdminDoc",
         setup() {
             const param = ref();
             param.value = {};
-            const categorys = ref();
+            const docs = ref();
             const loading = ref(false);
             const columns = [
                 {
@@ -92,7 +92,7 @@
                     dataIndex: 'name'
                 },
                 {
-                    title: '父分类',
+                    title: '父文档',
                     key:'parent',
                     dataIndex: 'parent'
                 },
@@ -115,15 +115,15 @@
                 loading.value = true;
                 // 如果不清空现有数据，则编辑保存重新加载数据后，再点编辑，则列表显示的还是编辑前的数据
                 level1.value = [];
-                axios.get("/category/all").then((response) => {
+                axios.get("/doc/all").then((response) => {
                     loading.value = false;
                     const data = response.data;
                     if (data.success) {
-                        categorys.value = data.content;
-                        console.log("原始数组:",categorys.value);
+                        docs.value = data.content;
+                        console.log("原始数组:",docs.value);
 
                         level1.value=[];
-                        level1.value=Tool.array2Tree(categorys.value,0);
+                        level1.value=Tool.array2Tree(docs.value,0);
                         console.log("树形结构:",level1)
                     } else {
                         message.error(data.message);
@@ -132,22 +132,16 @@
             };
 
             // -------- 表单 ---------
-            /**
-             * 数组，[100, 101]对应：前端开发 / Vue
-             */
-            const categoryIds = ref();
-            const category = ref();
+            //因为树选择组件的属性状态,会随当前编辑的节点而变化,所以单独声明一个响应式变量
+            const treeSelectData=ref();
+            treeSelectData.value=[];
+            const docIds = ref();
+            const doc = ref();
             const modalVisible = ref(false);
             const modalLoading = ref(false);
             const handleModalOk = () => {
                 modalLoading.value = true;
-                // setTimeout(()=>{
-                //     modalVisible.value=false;
-                //     modalLoading.value = false;
-                // },2000)
-                // category.value.category1Id = categoryIds.value[0];
-                // category.value.category2Id = categoryIds.value[1];
-                axios.post("/category/save", category.value).then((response) => {
+                axios.post("/doc/save", doc.value).then((response) => {
                     modalLoading.value = false;
                     const data = response.data; // data = commonResp
                     if (data.success) {
@@ -159,15 +153,38 @@
                     }
                 });
             };
-
             /**
-             * 编辑
-             */
+             *将某节点及其子孙节点全部为disable
+             * */
+            const  setDisable=(treeSelectData:any,id:any)=>{
+              //遍历数组,即遍历某一层节点
+                for (let i=0;i<treeSelectData.length;i++){
+                    const node=treeSelectData[i];
+                    if (node.id===id){
+                        console.log("disabled",node);
+                        node.disabled=true;
+
+                        //遍历所有子节点,将所有子节点全部都加上disabled
+                        const children=node.children;
+                        if (Tool.isNotEmpty(children)){
+                            for (let j=0;j<children.length;j++){
+                                setDisable(children,children[j].id)
+                            }
+                        }
+                    }
+                }
+            };
+            //编辑
             const edit = (record: any) => {
                 //弹出model
                 modalVisible.value = true;
-                category.value = Tool.copy(record);
-                categoryIds.value = [category.value.category1Id, category.value.category2Id]
+                doc.value = Tool.copy(record);
+
+                //不能选择当前节点及其所有子孙节点,作为父节点,会使树断开
+                treeSelectData.value=Tool.copy(level1.value);
+                setDisable(treeSelectData.value,record.id);
+                treeSelectData.value.unshift({id:0,name:'无'});
+                // docIds.value = [doc.value.doc1Id, doc.value.doc2Id]
             };
 
             /**
@@ -176,11 +193,11 @@
             const add = () => {
                 //弹出model
                 modalVisible.value = true;
-                category.value = {};
+                doc.value = {};
             };
 
             const handleDelete = (id: number) => {
-                axios.delete("/category/delete/" + id).then((response) => {
+                axios.delete("/doc/delete/" + id).then((response) => {
                     const data = response.data; // data = commonResp
                     if (data.success) {
                         // 重新加载列表
@@ -192,68 +209,28 @@
             };
 
             const level1 =  ref();
-            // let categorys: any;
-            /**
-             * 查询所有分类
-             **/
-            // const handleQueryCategory = () => {
-            //     loading.value = true;
-            //     axios.get("/category/all").then((response) => {
-            //         loading.value = false;
-            //         const data = response.data;
-            //         if (data.success) {
-            //             categorys = data.content;
-            //             console.log("原始数组：", categorys);
-            //
-            //             level1.value = [];
-            //             level1.value = Tool.array2Tree(categorys, 0);
-            //             console.log("树形结构：", level1.value);
-            //
-            //             // 加载完分类后，再加载分类，否则如果分类树加载很慢，则分类渲染会报错
-            //             handleQuery({
-            //                 page: 1,
-            //                 size: pagination.value.pageSize,
-            //             });
-            //         } else {
-            //             message.error(data.message);
-            //         }
-            //     });
-            // };
-
-            // const getCategoryName = (cid: number) => {
-            //     // console.log(cid)
-            //     let result = "";
-            //     categorys.forEach((item: any) => {
-            //         if (item.id === cid) {
-            //             // return item.name; // 注意，这里直接return不起作用
-            //             result = item.name;
-            //         }
-            //     });
-            //     return result;
-            // };
-
             onMounted(() => {
-                // handleQueryCategory();
+                // handleQueryDoc();
                 handleQuery()
             });
 
             return {
                 param,
-                categorys,
+                docs,
                 columns,
                 loading,
                 handleQuery,
-                // getCategoryName,
+                // getDocName,
                 edit,
                 add,
-                category,
+                doc,
                 modalVisible,
                 modalLoading,
                 handleModalOk,
-                categoryIds,
+                docIds,
                 level1,
-
-                handleDelete
+                handleDelete,
+                treeSelectData
             }
         }
     }
