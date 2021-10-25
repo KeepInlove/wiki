@@ -79,9 +79,18 @@
     import axios from 'axios';
     import { message } from 'ant-design-vue';
     import {Tool} from "@/util/tool";
+    import {useRoute} from "vue-router";
     export default {
         name: "AdminDoc",
         setup() {
+            const route=useRoute();
+            console.log("路由:",route);
+            console.log("route.path:",route.path);
+            console.log("route.query:",route.query);
+            console.log("route.params:",route.params);
+            console.log("route.fullPath:",route.fullPath);
+            console.log("route.name:",route.name);
+            console.log("route.meta:",route.meta);
             const param = ref();
             param.value = {};
             const docs = ref();
@@ -163,7 +172,6 @@
                     if (node.id===id){
                         console.log("disabled",node);
                         node.disabled=true;
-
                         //遍历所有子节点,将所有子节点全部都加上disabled
                         const children=node.children;
                         if (Tool.isNotEmpty(children)){
@@ -193,7 +201,10 @@
             const add = () => {
                 //弹出model
                 modalVisible.value = true;
-                doc.value = {};
+                doc.value = {
+                    ebookId:route.query.ebookId
+                };
+
             };
 
             const handleDelete = (id: number) => {
