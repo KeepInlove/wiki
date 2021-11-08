@@ -31,7 +31,7 @@
                                 title="删除后不可恢复，确认删除?"
                                 ok-text="是"
                                 cancel-text="否"
-                                @confirm="handleDelete(record.id)"
+                                @confirm="showDeleteConfirm(record.id,record.name)"
                         >
                             <a-button type="primary" danger>
                                 删除
@@ -40,14 +40,14 @@
                     </a-space>
                 </template>
             </a-table>
+
         </a-layout-content>
     </a-layout>
     <a-modal
             title="文档表单"
             v-model:visible="modalVisible"
             :confirm-loading="modalLoading"
-            @ok="handleModalOk"
-    >
+            @ok="handleModalOk">
         <a-form :model="doc" :label-col="{span:6}" :wrapper-col="{spin:18}">
             <a-form-item label="名称">
                 <a-input v-model:value="doc.name"/>
@@ -67,17 +67,21 @@
             <a-form-item label="顺序">
                 <a-input v-model:value="doc.sort"/>
             </a-form-item>
-
+            <a-form-item label="内容">
+                <div id="editContent" ></div>
+            </a-form-item>
         </a-form>
     </a-modal>
 </template>
 
 <script lang="ts">
-    import { defineComponent, onMounted, ref } from 'vue';
+    import { ExclamationCircleOutlined } from '@ant-design/icons-vue';
+    import { defineComponent, onMounted, ref ,createVNode} from 'vue';
     import axios from 'axios';
-    import { message } from 'ant-design-vue';
+    import { message,Modal  } from 'ant-design-vue';
     import {Tool} from "@/util/tool";
     import {useRoute} from "vue-router";
+    import E from 'wangeditor'
     export default {
         name: "AdminDoc",
         // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -147,6 +151,10 @@
             const doc = ref();
             const modalVisible = ref(false);
             const modalLoading = ref(false);
+            //创建富文本编辑器
+            const editor = new E('#editContent');
+
+
             const handleModalOk = () => {
                 modalLoading.value = true;
                 axios.post("/doc/save", doc.value).then((response) => {
@@ -215,6 +223,7 @@
             };
             //编辑
             const edit = (record: any) => {
+
                 //弹出model
                 modalVisible.value = true;
                 doc.value = Tool.copy(record);
@@ -223,23 +232,51 @@
                 setDisable(treeSelectData.value,record.id);
                 treeSelectData.value.unshift({id:0,name:'无'});
                 // docIds.value = [doc.value.doc1Id, doc.value.doc2Id]
+                setTimeout(function () {
+                    editor.create();
+                },100);
             };
 
             //新增
             const add = () => {
+
                 //弹出model
                 modalVisible.value = true;
                 doc.value = {
                     ebookId:route.query.ebookId
                 };
-
+                treeSelectData.value=Tool.copy(level1.value);
+                treeSelectData.value.unshift({id:0,name:'无'});
+                setTimeout(function () {
+                    editor.create();
+                },100);
             };
-            const handleDelete = (id: number) => {
+
+            const showDeleteConfirm = (id:any,name:any) => {
+                console.log(name)
+                getDeleteIds(level1.value,id);
+                Modal.confirm({
+                    title:  '重要提示',
+                    icon:  createVNode(ExclamationCircleOutlined),
+                    content:  '确认将删除【'+name+'】下所有文件?删除后不可恢复!' ,
+                    okText:  '确定',
+                    okType: 'danger',
+                    cancelText: '取消',
+                    onOk() {
+                        console.log("删除id数组:",ids);
+                        handleDelete();
+                    },
+                    onCancel() {
+                        console.log('Cancel');
+                    },
+                });
+            };
+            const handleDelete = () => {
                 //删除之前调用
                 // console.log(id);
-                console.log("调用前:",level1.value,ids);
-                getDeleteIds(level1.value,id);
-                console.log("调用后:",level1.value,ids);
+                // console.log("调用前:",level1.value,ids);
+                // getDeleteIds(level1.value,id);
+                // console.log("调用后:",level1.value,ids);
 
                 axios.delete("/doc/delete/"+ids.join(",") ).then((response) => {
                     const data = response.data; // data = commonResp
@@ -253,7 +290,8 @@
             };
             const level1 =  ref();
             onMounted(() => {
-                handleQuery()
+                handleQuery();
+
             });
 
             return {
@@ -271,7 +309,8 @@
                 docIds,
                 level1,
                 handleDelete,
-                treeSelectData
+                treeSelectData,
+                showDeleteConfirm
             }
         }
     }
