@@ -81,7 +81,8 @@
     import {Tool} from "@/util/tool";
     export default {
         name: "AdminCategory",
-        setup() {
+        // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+        setup(){
             const param = ref();
             param.value = {};
             const categorys = ref();

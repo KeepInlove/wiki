@@ -88,4 +88,11 @@ public class DocService {
     public void delete(Long id) {
         docMapper.deleteByPrimaryKey(id);
     }
+    public void delete(List<String> ids) {
+        //循环执行sql太多次,所以使用拼接sql
+        DocExample docExample = new DocExample();
+        DocExample.Criteria criteria = docExample.createCriteria();
+        criteria.andIdIn(ids);
+        docMapper.deleteByExample(docExample);
+    }
 }

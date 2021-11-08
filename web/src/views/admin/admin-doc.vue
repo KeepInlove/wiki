@@ -9,7 +9,6 @@
                         </a-button>
                     </a-form-item>
                 </a-form>
-
             </p>
             <a-table
                     :columns="columns"
@@ -21,7 +20,6 @@
                     <img v-if="cover" :src="cover" alt="avatar"/>
                 </template>
                 <template v-slot:doc="{ text, record }">
-<!--                    <span>{{ getDocName(record.doc1Id) }} / {{ getDocName(record.doc2Id) }}</span>-->
                 </template>
                 <template v-slot:action="{ text, record }">
                     <a-space size="small">
@@ -82,7 +80,8 @@
     import {useRoute} from "vue-router";
     export default {
         name: "AdminDoc",
-        setup() {
+        // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+        setup(){
             const route=useRoute();
             console.log("路由:",route);
             console.log("route.path:",route.path);
@@ -162,9 +161,8 @@
                     }
                 });
             };
-            /**
-             *将某节点及其子孙节点全部为disable
-             * */
+
+            //将某节点及其子孙节点全部为disable,  ----递归算法
             const  setDisable=(treeSelectData:any,id:any)=>{
               //遍历数组,即遍历某一层节点
                 for (let i=0;i<treeSelectData.length;i++){
@@ -172,12 +170,45 @@
                     if (node.id===id){
                         console.log("disabled",node);
                         node.disabled=true;
+
                         //遍历所有子节点,将所有子节点全部都加上disabled
                         const children=node.children;
                         if (Tool.isNotEmpty(children)){
                             for (let j=0;j<children.length;j++){
                                 setDisable(children,children[j].id)
                             }
+                        }
+                    }else {
+                        const children=node.children;
+                        if ((Tool.isNotEmpty(children))){
+                            setDisable(children,id)
+                        }
+                    }
+                }
+            };
+
+            //查找整根树枝
+            const ids:Array<string>=[];
+            const  getDeleteIds=(treeSelectData:any,id:any)=>{
+                //遍历数组,即遍历某一层节点
+                for (let i=0;i<treeSelectData.length;i++){
+                    const node=treeSelectData[i];
+                    if (node.id===id){
+                        console.log("delete",node);
+                        // node.disabled=true;
+                        //将目标ID放入结果集ids
+                        ids.push(id);
+                        //遍历所有子节点,将所有子节点全部都加上disabled
+                        const children=node.children;
+                        if (Tool.isNotEmpty(children)){
+                            for (let j=0;j<children.length;j++){
+                                getDeleteIds(children,children[j].id)
+                            }
+                        }
+                    }else {
+                        const children=node.children;
+                        if ((Tool.isNotEmpty(children))){
+                            getDeleteIds(children,id)
                         }
                     }
                 }
@@ -187,7 +218,6 @@
                 //弹出model
                 modalVisible.value = true;
                 doc.value = Tool.copy(record);
-
                 //不能选择当前节点及其所有子孙节点,作为父节点,会使树断开
                 treeSelectData.value=Tool.copy(level1.value);
                 setDisable(treeSelectData.value,record.id);
@@ -195,9 +225,7 @@
                 // docIds.value = [doc.value.doc1Id, doc.value.doc2Id]
             };
 
-            /**
-             * 新增
-             */
+            //新增
             const add = () => {
                 //弹出model
                 modalVisible.value = true;
@@ -206,9 +234,14 @@
                 };
 
             };
-
             const handleDelete = (id: number) => {
-                axios.delete("/doc/delete/" + id).then((response) => {
+                //删除之前调用
+                // console.log(id);
+                console.log("调用前:",level1.value,ids);
+                getDeleteIds(level1.value,id);
+                console.log("调用后:",level1.value,ids);
+
+                axios.delete("/doc/delete/"+ids.join(",") ).then((response) => {
                     const data = response.data; // data = commonResp
                     if (data.success) {
                         // 重新加载列表
@@ -218,10 +251,8 @@
                     }
                 });
             };
-
             const level1 =  ref();
             onMounted(() => {
-                // handleQueryDoc();
                 handleQuery()
             });
 
@@ -231,7 +262,6 @@
                 columns,
                 loading,
                 handleQuery,
-                // getDocName,
                 edit,
                 add,
                 doc,
