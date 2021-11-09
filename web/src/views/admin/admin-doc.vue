@@ -1,7 +1,9 @@
 <template>
     <a-layout>
         <a-layout-content :style="{ padding: '24px', margin: 0, minHeight: '280px' }">
-            <p>
+           <a-row :gutter="16+8">
+            <a-col :span="8">
+                <p>
                 <a-form layout="inline" :model="param">
                     <a-form-item>
                         <a-button type="primary" @click="add()">
@@ -10,68 +12,77 @@
                     </a-form-item>
                 </a-form>
             </p>
-            <a-table
-                    :columns="columns"
-                    :row-key="record => record.id"
-                    :data-source="level1"
-                    :pagination="false"
-                    :loading="loading">
-                <template #cover="{ text: cover }">
-                    <img v-if="cover" :src="cover" alt="avatar"/>
-                </template>
-                <template v-slot:doc="{ text, record }">
-                </template>
-                <template v-slot:action="{ text, record }">
-                    <a-space size="small">
-
-                        <a-button type="primary" @click="edit(record)">
-                            编辑
-                        </a-button>
-                        <a-popconfirm
-                                title="删除后不可恢复，确认删除?"
-                                ok-text="是"
-                                cancel-text="否"
-                                @confirm="showDeleteConfirm(record.id,record.name)"
-                        >
-                            <a-button type="primary" danger>
-                                删除
+                <a-table
+                        :columns="columns"
+                        :row-key="record => record.id"
+                        :data-source="level1"
+                        :pagination="false"
+                        :loading="loading"
+                        size="small">
+                    <template #name="{ text, record }">
+                      {{record.sort}}{{text}}
+                    </template>
+                    <template v-slot:action="{ text, record }">
+                        <a-space size="small">
+                            <a-button type="primary" @click="edit(record)" size="small">
+                                编辑
                             </a-button>
-                        </a-popconfirm>
-                    </a-space>
-                </template>
-            </a-table>
-
+                            <a-popconfirm
+                                    title="删除后不可恢复，确认删除?"
+                                    ok-text="是"
+                                    cancel-text="否"
+                                    @confirm="showDeleteConfirm(record.id,record.name)"
+                            >
+                                <a-button type="primary" danger size="small">
+                                    删除
+                                </a-button>
+                            </a-popconfirm>
+                        </a-space>
+                    </template>
+                </a-table>
+            </a-col>
+            <a-col :span="16">
+                <p>
+                    <a-form layout="inline" :model="param">
+                        <a-form-item>
+                            <a-button type="primary" @click="handleSave()" >
+                                保存
+                            </a-button>
+                        </a-form-item>
+                    </a-form>
+                </p>
+                <a-form layout="vertical" :model="doc" >
+                    <a-form-item >
+                        <a-input v-model:value="doc.name" placeholder="名称"/>
+                    </a-form-item>
+                    <a-form-item >
+                        <a-tree-select
+                                v-model:value="doc.parent"
+                                style="width: 100%"
+                                :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+                                :tree-data="treeSelectData"
+                                placeholder="请选择父文档"
+                                tree-default-expand-all
+                                :replaceFields="{title:'name', key:'id', value: 'id'}">
+                        </a-tree-select>
+                    </a-form-item>
+                    <a-form-item >
+                        <a-input v-model:value="doc.sort" placeholder="顺序"/>
+                    </a-form-item>
+                    <a-form-item>
+                        <div id="editContent" ></div>
+                    </a-form-item>
+                </a-form>
+            </a-col>
+           </a-row>
         </a-layout-content>
     </a-layout>
-    <a-modal
-            title="文档表单"
-            v-model:visible="modalVisible"
-            :confirm-loading="modalLoading"
-            @ok="handleModalOk">
-        <a-form :model="doc" :label-col="{span:6}" :wrapper-col="{spin:18}">
-            <a-form-item label="名称">
-                <a-input v-model:value="doc.name"/>
-            </a-form-item>
-            <a-form-item label="父文档">
-                <a-tree-select
-                        v-model:value="doc.parent"
-                        style="width: 100%"
-                        :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-                        :tree-data="treeSelectData"
-                        placeholder="请选择父文档"
-                        tree-default-expand-all
-                        :replaceFields="{title:'name', key:'id', value: 'id'}"
-                >
-                </a-tree-select>
-            </a-form-item>
-            <a-form-item label="顺序">
-                <a-input v-model:value="doc.sort"/>
-            </a-form-item>
-            <a-form-item label="内容">
-                <div id="editContent" ></div>
-            </a-form-item>
-        </a-form>
-    </a-modal>
+<!--    <a-modal-->
+<!--            title="文档表单"-->
+<!--            v-model:visible="modalVisible"-->
+<!--            :confirm-loading="modalLoading"-->
+<!--            @ok="handleModalOk">-->
+<!--    </a-modal>-->
 </template>
 
 <script lang="ts">
@@ -87,39 +98,34 @@
         // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
         setup(){
             const route=useRoute();
-            console.log("路由:",route);
-            console.log("route.path:",route.path);
-            console.log("route.query:",route.query);
-            console.log("route.params:",route.params);
-            console.log("route.fullPath:",route.fullPath);
-            console.log("route.name:",route.name);
-            console.log("route.meta:",route.meta);
+            // console.log("路由:",route);
+            // console.log("route.path:",route.path);
+            // console.log("route.query:",route.query);
+            // console.log("route.params:",route.params);
+            // console.log("route.fullPath:",route.fullPath);
+            // console.log("route.name:",route.name);
+            // console.log("route.meta:",route.meta);
             const param = ref();
             param.value = {};
             const docs = ref();
+            // 因为树选择组件的属性状态，会随当前编辑的节点而变化，所以单独声明一个响应式变量
+            const treeSelectData = ref();
+            treeSelectData.value = [];
             const loading = ref(false);
             const columns = [
                 {
                     title: '名称',
+                    slots: {customRender: 'name'},
                     dataIndex: 'name'
                 },
-                {
-                    title: '父文档',
-                    key:'parent',
-                    dataIndex: 'parent'
-                },
-                {
-                    title: '顺序',
-                    dataIndex: 'sort'
-                },
-
                 {
                     title: 'Action',
                     key: 'action',
                     slots: { customRender: 'action' }
                 }
             ];
-
+            const level1 = ref(); // 一级文档树，children属性就是二级文档
+            level1.value = [];
             /**
              * 数据查询
              **/
@@ -136,7 +142,11 @@
 
                         level1.value=[];
                         level1.value=Tool.array2Tree(docs.value,0);
-                        console.log("树形结构:",level1)
+                        console.log("树形结构:",level1);
+
+                        treeSelectData.value = Tool.copy(level1.value) || [];
+                        // 为选择树添加一个"无"
+                        treeSelectData.value.unshift({id: 0, name: '无'});
                     } else {
                         message.error(data.message);
                     }
@@ -144,24 +154,28 @@
             };
 
             // -------- 表单 ---------
-            //因为树选择组件的属性状态,会随当前编辑的节点而变化,所以单独声明一个响应式变量
-            const treeSelectData=ref();
-            treeSelectData.value=[];
             const docIds = ref();
             const doc = ref();
-            const modalVisible = ref(false);
-            const modalLoading = ref(false);
+            doc.value={
+                ebookId: route.query.ebookId
+            };
+            // const modalVisible = ref(false);
+            // const modalLoading = ref(false);
             //创建富文本编辑器
             const editor = new E('#editContent');
-
-
-            const handleModalOk = () => {
-                modalLoading.value = true;
+            editor.config.zIndex=0;
+            // 显示上传图片按钮，转成Base64存储，同时也支持拖拽图片
+            // 上传图片文档：https://doc.wangeditor.com/pages/07-%E4%B8%8A%E4%BC%A0%E5%9B%BE%E7%89%87/01-%E9%85%8D%E7%BD%AE%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%8E%A5%E5%8F%A3.html
+            // 上传视频文档：https://doc.wangeditor.com/pages/07-%E4%B8%8A%E4%BC%A0%E8%A7%86%E9%A2%91/01-%E9%85%8D%E7%BD%AE%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%8E%A5%E5%8F%A3.html
+            editor.config.uploadImgShowBase64 = true;
+            const handleSave = () => {
+                // modalLoading.value = true;
                 axios.post("/doc/save", doc.value).then((response) => {
-                    modalLoading.value = false;
+                    // modalLoading.value = false;
                     const data = response.data; // data = commonResp
                     if (data.success) {
-                        modalVisible.value = false;
+                        // modalVisible.value = false;
+                        message.success("保存成功!")
                         // 重新加载列表
                         handleQuery();
                     } else {
@@ -223,37 +237,31 @@
             };
             //编辑
             const edit = (record: any) => {
-
-                //弹出model
-                modalVisible.value = true;
+                console.log("使用工具前doc",doc.value);
+                // modalVisible.value = true;
                 doc.value = Tool.copy(record);
+                console.log("使用工具后doc",doc.value)
                 //不能选择当前节点及其所有子孙节点,作为父节点,会使树断开
                 treeSelectData.value=Tool.copy(level1.value);
                 setDisable(treeSelectData.value,record.id);
                 treeSelectData.value.unshift({id:0,name:'无'});
-                // docIds.value = [doc.value.doc1Id, doc.value.doc2Id]
-                setTimeout(function () {
-                    editor.create();
-                },100);
+                // docIds.value = [doc.value.doc1Id, doc.value.doc2Id];
             };
 
             //新增
             const add = () => {
-
                 //弹出model
-                modalVisible.value = true;
+                // modalVisible.value = true;
                 doc.value = {
                     ebookId:route.query.ebookId
                 };
                 treeSelectData.value=Tool.copy(level1.value);
                 treeSelectData.value.unshift({id:0,name:'无'});
-                setTimeout(function () {
-                    editor.create();
-                },100);
+
             };
 
             const showDeleteConfirm = (id:any,name:any) => {
-                console.log(name)
+                // console.log(name);
                 getDeleteIds(level1.value,id);
                 Modal.confirm({
                     title:  '重要提示',
@@ -288,10 +296,9 @@
                     }
                 });
             };
-            const level1 =  ref();
             onMounted(() => {
+                editor.create();
                 handleQuery();
-
             });
 
             return {
@@ -299,18 +306,20 @@
                 docs,
                 columns,
                 loading,
+                doc,
+                // modalVisible,
+                // modalLoading,
+                // handleModalOk,
+                docIds,
+                level1,
+                treeSelectData,
+
                 handleQuery,
                 edit,
                 add,
-                doc,
-                modalVisible,
-                modalLoading,
-                handleModalOk,
-                docIds,
-                level1,
                 handleDelete,
-                treeSelectData,
-                showDeleteConfirm
+                showDeleteConfirm,
+                handleSave
             }
         }
     }
