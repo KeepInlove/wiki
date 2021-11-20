@@ -6,7 +6,6 @@
             </div>
             <h2>Mr Freshman</h2>
         </div>
-
         <a-menu
                 theme="light"
                 mode="horizontal"

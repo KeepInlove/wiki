@@ -2,8 +2,10 @@ package com.gxy.wiki.service;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.gxy.wiki.domain.Content;
 import com.gxy.wiki.domain.Doc;
 import com.gxy.wiki.domain.DocExample;
+import com.gxy.wiki.mapper.ContentMapper;
 import com.gxy.wiki.mapper.DocMapper;
 import com.gxy.wiki.req.DocQueryReq;
 import com.gxy.wiki.req.DocSaveReq;
@@ -30,6 +32,9 @@ import java.util.List;
 public class DocService {
     @Autowired
     private DocMapper docMapper;
+    @Autowired
+    private ContentMapper contentMapper;
+
     @Autowired
     private SnowFlake snowFlake;
     public PageResp<DocQueryResp> list(@Valid DocQueryReq req){
@@ -60,8 +65,9 @@ public class DocService {
         return pageResp;
     }
 
-    public List<DocQueryResp> all(){
+    public List<DocQueryResp> all(Long ebookId){
         DocExample docExample = new DocExample();
+        docExample.createCriteria().andEbookIdEqualTo(ebookId);
         docExample.setOrderByClause("sort asc");
         List<Doc> docList = docMapper.selectByExample(docExample);
 
@@ -70,18 +76,33 @@ public class DocService {
 
         return respList;
     }
+
+
+    public String findContent(Long id) {
+        Content content = contentMapper.selectByPrimaryKey(id);
+        return ObjectUtils.isEmpty(content)?"":content.getContent();
+    }
     /**
      * 保存
      */
     public void save(DocSaveReq req){
         Doc doc=CopyUtil.copy(req,Doc.class);
+        Content content=CopyUtil.copy(req,Content.class);
         if (ObjectUtils.isEmpty(req.getId())){
             //新增
             doc.setId(snowFlake.nextId());
             docMapper.insertSelective(doc);
+
+            content.setId(doc.getId());
+            contentMapper.insertSelective(content);
         }else {
             //更新
             docMapper.updateByPrimaryKey(doc);
+            //大字段的更新
+            int i = contentMapper.updateByPrimaryKeyWithBLOBs(content);
+            if (i==0){
+             contentMapper.insertSelective(content);
+            }
         }
     }
 

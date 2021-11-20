@@ -1,6 +1,6 @@
 <template>
     <a-layout>
-        <a-layout-sider width="200"  :style="{background: '#fff'}">
+        <a-layout-sider width="200px"  :style="{background: '#fff'}">
          <a-menu mode="inline" :style="{  height: '100%',borderRight: 0 }" @click="handleClick">
          <a-menu-item key="welcome">
              <SmileTwoTone  style="fontSize:16px" />
@@ -32,7 +32,7 @@
                         </template>
                         <a-list-item-meta :description="item.description">
                             <template #title>
-                                <a :href="item.href">{{ item.name }}</a>
+                                <router-link :to="'/doc?ebookId='+item.id">{{ item.name }}</router-link>
                             </template>
                             <template #avatar><a-avatar :src="item.cover" /></template>
                         </a-list-item-meta>

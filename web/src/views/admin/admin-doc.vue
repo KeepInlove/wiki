@@ -2,9 +2,14 @@
     <a-layout>
         <a-layout-content :style="{ padding: '24px', margin: 0, minHeight: '280px' }">
            <a-row :gutter="16+8">
-            <a-col :span="8">
+            <a-col :span="7">
                 <p>
                 <a-form layout="inline" :model="param">
+                    <a-form-item>
+                        <a-button type="primary" @click="handleQuery()">
+                            查询
+                        </a-button>
+                    </a-form-item>
                     <a-form-item>
                         <a-button type="primary" @click="add()">
                             新增
@@ -41,18 +46,18 @@
                     </template>
                 </a-table>
             </a-col>
-            <a-col :span="16">
+            <a-col :span="17">
                 <p>
                     <a-form layout="inline" :model="param">
                         <a-form-item>
-                            <a-button type="primary" @click="handleSave()" >
+                            <a-button  type="primary" @click="handleSave()" >
                                 保存
                             </a-button>
                         </a-form-item>
                     </a-form>
                 </p>
-                <a-form layout="vertical" :model="doc" >
-                    <a-form-item >
+                <a-form layout="horizontal" :model="doc" >
+                    <a-form-item>
                         <a-input v-model:value="doc.name" placeholder="名称"/>
                     </a-form-item>
                     <a-form-item >
@@ -69,20 +74,20 @@
                     <a-form-item >
                         <a-input v-model:value="doc.sort" placeholder="顺序"/>
                     </a-form-item>
+                    <a-form-item >
+                       <a-button type="primary" @click="handlePreviewContent()"><EyeOutlined/> 内容预览</a-button>
+                    </a-form-item>
                     <a-form-item>
-                        <div id="editContent" ></div>
+                        <div id="editContent"></div>
                     </a-form-item>
                 </a-form>
             </a-col>
            </a-row>
         </a-layout-content>
+        <a-drawer width="80%" placement="right" :closable="false" :visible="drawerVisible" @close="onDrawerClose">
+            <div class="wangeditor" :innerHTML="previewHtml"></div>
+        </a-drawer>
     </a-layout>
-<!--    <a-modal-->
-<!--            title="文档表单"-->
-<!--            v-model:visible="modalVisible"-->
-<!--            :confirm-loading="modalLoading"-->
-<!--            @ok="handleModalOk">-->
-<!--    </a-modal>-->
 </template>
 
 <script lang="ts">
@@ -126,6 +131,8 @@
             ];
             const level1 = ref(); // 一级文档树，children属性就是二级文档
             level1.value = [];
+
+
             /**
              * 数据查询
              **/
@@ -133,7 +140,7 @@
                 loading.value = true;
                 // 如果不清空现有数据，则编辑保存重新加载数据后，再点编辑，则列表显示的还是编辑前的数据
                 level1.value = [];
-                axios.get("/doc/all").then((response) => {
+                axios.get("/doc/all/"+route.query.ebookId).then((response) => {
                     loading.value = false;
                     const data = response.data;
                     if (data.success) {
@@ -170,11 +177,10 @@
             editor.config.uploadImgShowBase64 = true;
             const handleSave = () => {
                 // modalLoading.value = true;
+                doc.value.content=editor.txt.html();
                 axios.post("/doc/save", doc.value).then((response) => {
-                    // modalLoading.value = false;
                     const data = response.data; // data = commonResp
                     if (data.success) {
-                        // modalVisible.value = false;
                         message.success("保存成功!")
                         // 重新加载列表
                         handleQuery();
@@ -237,19 +243,35 @@
             };
             //编辑
             const edit = (record: any) => {
-                console.log("使用工具前doc",doc.value);
+                //先清空
+                editor.txt.html("");
+                // console.log("使用工具前doc",doc.value);
                 // modalVisible.value = true;
                 doc.value = Tool.copy(record);
-                console.log("使用工具后doc",doc.value)
+                //doc有id发起查询
+                handleQueryContent();
+                // console.log("使用工具后doc",doc.value);
                 //不能选择当前节点及其所有子孙节点,作为父节点,会使树断开
                 treeSelectData.value=Tool.copy(level1.value);
                 setDisable(treeSelectData.value,record.id);
                 treeSelectData.value.unshift({id:0,name:'无'});
                 // docIds.value = [doc.value.doc1Id, doc.value.doc2Id];
             };
-
+            // 内容查询
+            const handleQueryContent = () => {
+                axios.get("/doc/findContent/"+doc.value.id).then((response) => {
+                    const data = response.data;
+                    if (data.success) {
+                        editor.txt.html(data.content);
+                    } else {
+                        message.error(data.message);
+                    }
+                });
+            };
             //新增
             const add = () => {
+                //先清空
+                editor.txt.html("");
                 //弹出model
                 // modalVisible.value = true;
                 doc.value = {
@@ -296,7 +318,20 @@
                     }
                 });
             };
+            // ----------------富文本预览--------------
+            const drawerVisible = ref(false);
+            const previewHtml = ref();
+            const handlePreviewContent = () => {
+                const html = editor.txt.html();
+                previewHtml.value = html;
+                drawerVisible.value = true;
+            };
+            const onDrawerClose = () => {
+                drawerVisible.value = false;
+            };
+
             onMounted(() => {
+                // console.log(doc.value);
                 editor.create();
                 handleQuery();
             });
@@ -313,13 +348,16 @@
                 docIds,
                 level1,
                 treeSelectData,
-
+                drawerVisible,
+                previewHtml,
                 handleQuery,
                 edit,
                 add,
                 handleDelete,
                 showDeleteConfirm,
-                handleSave
+                handleSave,
+                handlePreviewContent,
+                onDrawerClose
             }
         }
     }
