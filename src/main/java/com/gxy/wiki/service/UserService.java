@@ -7,10 +7,12 @@ import com.gxy.wiki.domain.UserExample;
 import com.gxy.wiki.exception.BusinessException;
 import com.gxy.wiki.exception.BusinessExceptionCode;
 import com.gxy.wiki.mapper.UserMapper;
+import com.gxy.wiki.req.UserLoginReq;
 import com.gxy.wiki.req.UserQueryReq;
 import com.gxy.wiki.req.UserResetPasswordReq;
 import com.gxy.wiki.req.UserSaveReq;
 import com.gxy.wiki.resp.PageResp;
+import com.gxy.wiki.resp.UserLoginResp;
 import com.gxy.wiki.resp.UserQueryResp;
 import com.gxy.wiki.utils.CopyUtil;
 import com.gxy.wiki.utils.SnowFlake;
@@ -87,7 +89,7 @@ public class UserService {
         userMapper.deleteByPrimaryKey(id);
     }
 
-
+    //按登录名查询用户
     public User selectByLoginName(String loginName){
         UserExample userExample = new UserExample();
         UserExample.Criteria criteria = userExample.createCriteria();
@@ -95,5 +97,26 @@ public class UserService {
         List<User> userList = userMapper.selectByExample(userExample);
         boolean empty = CollectionUtils.isEmpty(userList);
         return empty?null:userList.get(0);
+    }
+
+    //登录
+    public UserLoginResp login(UserLoginReq req) {
+        User userDb = selectByLoginName(req.getLoginName());
+        if (ObjectUtils.isEmpty(userDb)){
+            //用户名不存在
+            log.info("用户名不存在,{}",req.getLoginName());
+            throw new BusinessException(BusinessExceptionCode.LOGIN_USER_ERROR);
+        }else {
+            if (userDb.getPassword().equals(req.getPassword())){
+                //登录成功
+                UserLoginResp userLoginResp=CopyUtil.copy(userDb,UserLoginResp.class);
+                return userLoginResp;
+            }else {
+                //密码错误
+                log.info("密码错误,输入密码:{},数据库密码:{}",req.getPassword(),userDb.getPassword());
+                throw new BusinessException(BusinessExceptionCode.LOGIN_USER_ERROR);
+            }
+        }
+
     }
 }

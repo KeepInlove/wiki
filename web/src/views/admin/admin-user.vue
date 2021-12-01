@@ -182,6 +182,7 @@
                     if (data.success) {
                         modalVisible.value = false;
                         // 重新加载列表
+                        message.success("添加用户成功!")
                         handleQuery({
                             page: pagination.value.current,
                             size: pagination.value.pageSize,
@@ -213,6 +214,7 @@
                     const data = response.data; // data = commonResp
                     if (data.success) {
                         // 重新加载列表
+                        message.success("用户删除成功");
                         handleQuery({
                             page: pagination.value.current,
                             size: pagination.value.pageSize,
@@ -236,7 +238,7 @@
                     const data = response.data; // data = commonResp
                     if (data.success) {
                         resetModalVisible.value = false;
-
+                        message.success("重置密码成功!")
                         // 重新加载列表
                         handleQuery({
                             page: pagination.value.current,
