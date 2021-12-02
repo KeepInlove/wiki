@@ -130,7 +130,4 @@ export default defineComponent({
         border-radius: 8%;
         margin: 5px 0;
     }
-    /*.site-layout-background {*/
-    /*    background: #fff;*/
-    /*}*/
 </style>

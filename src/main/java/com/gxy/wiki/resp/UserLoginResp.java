@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
  * @Description TODO
  * @Date 2021/9/24 23:33
  */
-public class UserLoginResp {
+public class UserLoginResp{
 
     private Long id;
     @NotNull(message = "【用户名】不能为空")
@@ -16,7 +16,15 @@ public class UserLoginResp {
 
     @NotNull(message = "【昵称】不能为空")
     private String name;
+    private String token;
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
     public Long getId() {
         return id;
@@ -42,13 +50,13 @@ public class UserLoginResp {
         this.name = name;
     }
 
-
     @Override
     public String toString() {
-        return "UserQueryResp{" +
+        return "UserLoginResp{" +
                 "id=" + id +
                 ", loginName='" + loginName + '\'' +
                 ", name='" + name + '\'' +
+                ", token='" + token + '\'' +
                 '}';
     }
 }

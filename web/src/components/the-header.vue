@@ -25,17 +25,31 @@
             <a-menu-item key="/about">
                 <router-link to="/about">关于我</router-link>
             </a-menu-item>
-            <a-menu-item>
+            <a-menu-item key="github">
                 <a href="https://github.com/KeepInlove" target="_blank" >
                     <GithubOutlined style="fontSize:20px"/>
                 </a>
             </a-menu-item>
-
-            <a-menu-item>
-                <a @click="showLoginModal">
-                 <span>登录</span>
-                </a>
+            <a-menu-item key="login">
+                <a @click="showLoginModal" v-show="!user.id">
+                <span>登录</span>
+            </a>
+                <a-popconfirm
+                        title="确认退出登录?"
+                        ok-text="是"
+                        cancel-text="否"
+                        @confirm="logout()"
+                >
+                    <a v-show="user.id">
+                        <span>退出</span>
+                    </a>
+                </a-popconfirm>
             </a-menu-item>
+<!--            <a-menu-item disabled>-->
+<!--                <a v-show="user.id">-->
+<!--                    <span>您好：{{user.name}}</span>-->
+<!--                </a>-->
+<!--            </a-menu-item>-->
         </a-menu>
     </a-layout-header>
     <a-modal
@@ -55,10 +69,11 @@
     </a-modal>
 </template>
 <script lang="ts">
-    import { defineComponent,ref ,} from 'vue';
+    import { defineComponent,ref ,computed} from 'vue';
     import { GithubOutlined } from '@ant-design/icons-vue';
     import {message} from "ant-design-vue";
     import axios from 'axios'
+    import store from "@/store";
     declare let hexMd5:any;
     declare let KEY: any;
     export default defineComponent({
@@ -67,6 +82,7 @@
             GithubOutlined
         },
         setup(){
+            const user = computed(() => store.state.user);
             const loginUser=ref({
                 loginName:"test",
                 password:"test"
@@ -88,18 +104,33 @@
                    if (data.success){
                        loginModalVisible.value=false;
                        message.success("登录成功!!");
+                       store.commit("setUser", data.content);
                    }else {
                        message.error(data.message)
                    }
                 })
             };
-
+            // 退出登录
+            const logout = () => {
+                console.log("退出登录开始");
+                axios.delete('/user/logout/' + user.value.token).then((response) => {
+                    const data = response.data;
+                    if (data.success) {
+                        message.success("退出成功！");
+                        store.commit("setUser", {});
+                    } else {
+                        message.error(data.message);
+                    }
+                });
+            };
             return{
+                user,
                 loginUser,
                 loginModalVisible,
                 loginModalLoading,
                 showLoginModal,
-                login
+                login,
+                logout,
             }
 
         }
@@ -119,5 +150,9 @@
     img{
         width: 32px;
         height: 32px;
+    }
+    .login-menu {
+        float: right;
+        padding-left: 10px;
     }
 </style>
