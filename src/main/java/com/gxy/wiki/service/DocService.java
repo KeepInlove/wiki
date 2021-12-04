@@ -7,6 +7,7 @@ import com.gxy.wiki.domain.Doc;
 import com.gxy.wiki.domain.DocExample;
 import com.gxy.wiki.mapper.ContentMapper;
 import com.gxy.wiki.mapper.DocMapper;
+import com.gxy.wiki.mapper.DocMapperCust;
 import com.gxy.wiki.req.DocQueryReq;
 import com.gxy.wiki.req.DocSaveReq;
 import com.gxy.wiki.resp.DocQueryResp;
@@ -34,6 +35,8 @@ public class DocService {
     private DocMapper docMapper;
     @Autowired
     private ContentMapper contentMapper;
+    @Autowired
+    private DocMapperCust docMapperCust;
 
     @Autowired
     private SnowFlake snowFlake;
@@ -80,6 +83,8 @@ public class DocService {
 
     public String findContent(Long id) {
         Content content = contentMapper.selectByPrimaryKey(id);
+        //增加文档阅读数
+        docMapperCust.increaseViewCount(id);
         return ObjectUtils.isEmpty(content)?"":content.getContent();
     }
     /**
@@ -91,6 +96,8 @@ public class DocService {
         if (ObjectUtils.isEmpty(req.getId())){
             //新增
             doc.setId(snowFlake.nextId());
+//            doc.setViewCount(0);
+//            doc.setVoteCount(0);
             docMapper.insertSelective(doc);
 
             content.setId(doc.getId());
@@ -115,5 +122,9 @@ public class DocService {
         DocExample.Criteria criteria = docExample.createCriteria();
         criteria.andIdIn(ids);
         docMapper.deleteByExample(docExample);
+    }
+    //点赞
+    public void vote(Long id) {
+        docMapperCust.increaseVoteCount(id);
     }
 }

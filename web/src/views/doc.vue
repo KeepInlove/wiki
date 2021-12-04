@@ -3,7 +3,7 @@
         <a-layout-content :style="{background:'#fff',padding:'24px',margin:0,minHeight:'280px'}">
            <H2 v-if="level1.length==0" :style="{textAlign: 'center',color:'crimson'}">对比起，找不到相关文档</H2>
             <a-row>
-                <a-col :span="5">
+                <a-col :span="5" :style="{textAlign: 'center'}">
                     <a-tree
                     v-if="level1.length > 0"
                     :tree-data="level1"
@@ -14,7 +14,21 @@
                     </a-tree>
                 </a-col>
                 <a-col :span="16">
+                    <div>
+<!--                        <h2>{{doc.name}}</h2>-->
+                        <div>
+                            <h2>{{doc.name}}</h2>
+                            <span> <EyeTwoTone />阅读数: {{doc.viewCount}}</span>&nbsp;&nbsp;&nbsp;
+                            <span><LikeTwoTone />点赞数: {{doc.voteCount}}</span>
+                            <a-divider style="height: 2px;background-color: #9999cc"/>
+                        </div>
+                    </div>
                     <div class="wangeditor" :innerHTML="html"></div>
+                    <div class="vote-div">
+                        <a-button type="primary" shape="round" :size="large" @click="vote">
+                            <template #icon><LikeOutlined/>&nbsp;&nbsp;点赞数 : {{doc.voteCount}}</template>
+                        </a-button>
+                    </div>
                 </a-col>
         </a-row>
     </a-layout-content>
@@ -26,6 +40,7 @@
     import axios from "axios";
     import {Tool} from "@/util/tool";
     import {message} from "ant-design-vue";
+
     export default defineComponent({
         name: 'Doc',
         setup(){
@@ -36,6 +51,9 @@
             const level1 = ref();
             const html=ref();
             level1.value=[];
+            //选中的文档
+            const doc=ref();
+            doc.value={};
 
             //内容查询
             const handleQueryContent = (id:number) => {
@@ -60,19 +78,35 @@
                         docs.value = data.content;
                         level1.value=[];
                         level1.value=Tool.array2Tree(docs.value,0);
+
                         if (Tool.isNotEmpty(docs.value)){
                             defaultSelectedKeys.value=[level1.value[0].id];
-                            handleQueryContent(level1.value[0].id)
+                            handleQueryContent(level1.value[0].id);
+                            //初始显示文档
+                            doc.value=level1.value[0]
                         }
                     } else {
                         message.error(data.message);
                     }
                 });
             };
-
+            //点赞
+            const vote=()=>{
+                axios.get('/doc/vote/'+doc.value.id).then((resp)=>{
+                    const data=resp.data;
+                    if (data.success){
+                        doc.value.voteCount++;
+                    }else {
+                        message.error(data.message)
+                    }
+                })
+            };
+            //选中节点
            const onSelect=(selectedKeys:any,info:any)=>{
                console.log('selected',selectedKeys,info);
                if (Tool.isNotEmpty(selectedKeys)){
+                   //选中某个节点时,加载该节点的文档信息
+                   doc.value=info.selectedNodes[0].props;
                    handleQueryContent(selectedKeys[0]);
                }
             };
@@ -82,7 +116,9 @@
             return{
                 level1,
                 html,
-                onSelect
+                doc,
+                onSelect,
+                vote
             }
         }
     });
@@ -139,7 +175,7 @@
     .wangeditor blockquote p {
         font-family:"SimSun";
         margin: 20px 10px !important;
-        font-size: 16px !important;
+        font-size: 18px !important;
         font-weight:600;
     }
 
@@ -159,5 +195,9 @@
     .wangeditor iframe {
         width: 100%;
         height: 400px;
+    }
+    .ant-tree-title{
+        font-size:17px
+
     }
 </style>
