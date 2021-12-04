@@ -1,6 +1,6 @@
 <template>
     <a-layout>
-        <a-layout-sider width="200px"  :style="{background: '#fff'}">
+     <a-layout-sider width="200px"  :style="{background: '#fff'}">
          <a-menu mode="inline" :style="{  height: '100%',borderRight: 0 }" @click="handleClick">
          <a-menu-item key="welcome">
              <SmileTwoTone  style="fontSize:16px" />
@@ -16,7 +16,7 @@
         </a-sub-menu>
       </a-menu>
     </a-layout-sider>
-     <a-layout-content :style="{ padding: '24px', margin: 0, minHeight: '500px'}">
+     <a-layout-content :style="{ padding: '24px', margin: 0, minHeight: '450px'}">
             <a-card class="welcome" v-show="isShowWelcome">
                 <h1>欢迎来到首页</h1>
             </a-card>
