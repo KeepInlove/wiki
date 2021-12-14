@@ -37,6 +37,7 @@ public class UserService {
     private UserMapper userMapper;
     @Autowired
     private SnowFlake snowFlake;
+
     public PageResp<UserQueryResp> list(UserQueryReq req){
         UserExample userExample = new UserExample();
         UserExample.Criteria criteria = userExample.createCriteria();

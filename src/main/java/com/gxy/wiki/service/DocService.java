@@ -5,6 +5,8 @@ import com.github.pagehelper.PageInfo;
 import com.gxy.wiki.domain.Content;
 import com.gxy.wiki.domain.Doc;
 import com.gxy.wiki.domain.DocExample;
+import com.gxy.wiki.exception.BusinessException;
+import com.gxy.wiki.exception.BusinessExceptionCode;
 import com.gxy.wiki.mapper.ContentMapper;
 import com.gxy.wiki.mapper.DocMapper;
 import com.gxy.wiki.mapper.DocMapperCust;
@@ -13,6 +15,8 @@ import com.gxy.wiki.req.DocSaveReq;
 import com.gxy.wiki.resp.DocQueryResp;
 import com.gxy.wiki.resp.PageResp;
 import com.gxy.wiki.utils.CopyUtil;
+import com.gxy.wiki.utils.RedisUtil;
+import com.gxy.wiki.utils.RequestContext;
 import com.gxy.wiki.utils.SnowFlake;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +41,10 @@ public class DocService {
     private ContentMapper contentMapper;
     @Autowired
     private DocMapperCust docMapperCust;
+    @Autowired
+    private RedisUtil redisUtil;
+    @Autowired
+    WsAsyncService wsAsyncService;
 
     @Autowired
     private SnowFlake snowFlake;
@@ -126,5 +134,21 @@ public class DocService {
     //点赞
     public void vote(Long id) {
         docMapperCust.increaseVoteCount(id);
+        //远程IP+Doc.id作为key存放redis24小时内不能重复
+        String ip= RequestContext.getRemoteAddr();
+        if (redisUtil.validateRepeat("DOC_VOTE_"+id+"_"+ip,3600*24)){
+            docMapperCust.increaseVoteCount(id);
+        }else {
+            throw new BusinessException(BusinessExceptionCode.VOTE_REPEAT);
+        }
+        //推送消息
+        Doc doc = docMapper.selectByPrimaryKey(id);
+        //异步化通知
+        wsAsyncService.sendInfo("【"+doc.getName()+"】被点赞了！");
+    }
+
+
+    public void updateEbookInfo(){
+        docMapperCust.updateEbookInfo();
     }
 }
