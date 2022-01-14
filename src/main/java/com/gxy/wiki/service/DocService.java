@@ -19,8 +19,10 @@ import com.gxy.wiki.utils.RedisUtil;
 import com.gxy.wiki.utils.RequestContext;
 import com.gxy.wiki.utils.SnowFlake;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import javax.validation.Valid;
@@ -45,6 +47,8 @@ public class DocService {
     private RedisUtil redisUtil;
     @Autowired
     WsAsyncService wsAsyncService;
+    @Autowired
+    WsService wsService;
 
     @Autowired
     private SnowFlake snowFlake;
@@ -98,6 +102,7 @@ public class DocService {
     /**
      * 保存
      */
+    @Transactional
     public void save(DocSaveReq req){
         Doc doc=CopyUtil.copy(req,Doc.class);
         Content content=CopyUtil.copy(req,Content.class);
@@ -144,7 +149,8 @@ public class DocService {
         //推送消息
         Doc doc = docMapper.selectByPrimaryKey(id);
         //异步化通知
-        wsAsyncService.sendInfo("【"+doc.getName()+"】被点赞了！");
+        String logId= MDC.get("LOG_ID");
+        wsService.sendInfo("【"+doc.getName()+"】被点赞了！",logId);
     }
 
 

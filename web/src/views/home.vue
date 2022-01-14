@@ -17,9 +17,9 @@
       </a-menu>
     </a-layout-sider>
      <a-layout-content :style="{ padding: '24px', margin: 0, minHeight: '450px'}">
-            <a-card class="welcome" v-show="isShowWelcome">
-                <h1>欢迎来到首页</h1>
-            </a-card>
+            <div class="welcome" v-show="isShowWelcome">
+                <the-welcome></the-welcome>
+            </div>
             <a-card v-show="!isShowWelcome">
                 <a-list  item-layout="vertical" size="large"  :data-source="ebooks" :grid="{ gutter: 20, column: 3 }">
                 <template #renderItem="{ item }">
@@ -58,8 +58,12 @@ import { defineComponent ,onMounted,ref} from 'vue';
 import {message} from "ant-design-vue";
 import {Tool} from "@/util/tool";
 import axios from 'axios'
+import TheWelcome from '@/components/the-welcome.vue'
 export default defineComponent({
   name: 'Home',
+    components:{
+        TheWelcome
+    },
   setup(){
     console.log('setup');
     const ebooks=ref();
