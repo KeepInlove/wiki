@@ -1,9 +1,9 @@
 <template>
     <a-layout-footer :style="{textAlign:'center',backgroundColor:'#fff',marginBottom:'0'}" >
-        <CopyrightCircleTwoTone /> 2021 Created by Guo
+        <CopyrightCircleTwoTone /> 2021-2022 Created by Guo
         <br/>
         <SafetyCertificateTwoTone />
-        备案号: <a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=你的备案号" target="_blank" :style="{color: '#000001'}">123456789xxxx</a>
+        备案号: <a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=豫ICP备2021029145号-1" target="_blank" :style="{color: '#000001'}">豫ICP备2021029145号-1</a>
     </a-layout-footer>
 </template>
 
@@ -24,7 +24,7 @@
             let websocket:any;
             let token:any;
             const onOpen=()=>{
-                console.log('webSocket连接成功,状态码:',websocket.readyState)
+                // console.log('webSocket连接成功,状态码:',websocket.readyState)
             };
             const onMessage = (event: any) => {
                 console.log('WebSocket收到消息：', event.data);
@@ -34,10 +34,10 @@
                 });
             };
             const onError = () => {
-                console.log('WebSocket连接错误，状态码：', websocket.readyState)
+                // console.log('WebSocket连接错误，状态码：', websocket.readyState)
             };
             const onClose = () => {
-                console.log('WebSocket连接关闭，状态码：', websocket.readyState)
+                // console.log('WebSocket连接关闭，状态码：', websocket.readyState)
             };
             const initWebSocket = () => {
                 // 连接成功

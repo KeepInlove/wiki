@@ -1,0 +1,19 @@
+# 端口号
+server:
+  port: 8880
+# 数据库连接
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/wiki?characterEncoding=UTF8&autoReconnect=true&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    username: root
+    password: 123456
+#    redis配置
+  redis:
+    host: 0.0.0.0
+    port: 6379
+    username:
+    password: 123456
+# 配置mybatis
+mybatis:
+  mapper-locations: classpath:/mapper/**/*.xml

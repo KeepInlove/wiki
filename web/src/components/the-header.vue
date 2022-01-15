@@ -11,9 +11,9 @@
             <a-col :span="4">
                 <div class="logo">
                     <div>
-                        <img src="https://aliyuncdn.antdv.com/v2/assets/logo.1ef800a8.svg">
+                        <img src="../../public/logo.1ef800a8.svg" >
                     </div>
-                    <h2>知识库系统</h2>
+                    <h2>小兔饲养员</h2>
                 </div>
             </a-col>
             <a-col :span="16">
@@ -100,8 +100,8 @@
         setup(){
             const user = computed(() => store.state.user);
             const loginUser=ref({
-                loginName:"test",
-                password:"test"
+                loginName:"",
+                password:""
             });
             const loginModalVisible=ref(false);
             const loginModalLoading=ref(false);
@@ -111,7 +111,7 @@
             };
             //登录
             const login=()=>{
-                console.log('开始登录');
+                // console.log('开始登录');
                 loginModalLoading.value=true;
                 loginUser.value.password=hexMd5(loginUser.value.password + KEY);
                 axios.post('/user/login',loginUser.value).then((response)=>{
@@ -128,12 +128,13 @@
             };
             // 退出登录
             const logout = () => {
-                console.log("退出登录开始");
+                // console.log("退出登录开始");
                 axios.delete('/user/logout/' + user.value.token).then((response) => {
                     const data = response.data;
                     if (data.success) {
                         message.success("退出成功！");
                         store.commit("setUser", {});
+                        location.reload();
                     } else {
                         message.error(data.message);
                     }
@@ -152,7 +153,7 @@
         }
     });
 </script>
-<style>
+<style scoped>
 
     .logo {
         width: 200px;

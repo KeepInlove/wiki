@@ -58,9 +58,9 @@
             //内容查询
             const handleQueryContent = (id:number) => {
                 axios.get("/doc/findContent/"+id).then((response) => {
-                    console.log(response.data)
+                    // console.log(response.data);
                     const data = response.data;
-                    console.log(data)
+                    // console.log(data);
                     if (data.success) {
                         html.value=data.content;
                     } else {
@@ -103,7 +103,7 @@
             };
             //选中节点
            const onSelect=(selectedKeys:any,info:any)=>{
-               console.log('selected',selectedKeys,info);
+               // console.log('selected',selectedKeys,info);
                if (Tool.isNotEmpty(selectedKeys)){
                    //选中某个节点时,加载该节点的文档信息
                    doc.value=info.selectedNodes[0].props;
