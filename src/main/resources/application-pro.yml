@@ -5,15 +5,15 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/wiki?characterEncoding=UTF8&autoReconnect=true&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    url: jdbc:mysql://sh-cdb-3t2y1qjs.sql.tencentcdb.com:59206/wiki?characterEncoding=UTF8&autoReconnect=true&serverTimezone=Asia/Shanghai&allowMultiQueries=true
     username: root
-    password: 123456
-#    redis配置
+    password: gg1206245X
+  #    redis配置
   redis:
-    host: 0.0.0.0
+    host: r-uf6j7jxa135iau2ycspd.redis.rds.aliyuncs.com
     port: 6379
-    username:
-    password: 123456
+    username: r-uf6j7jxa135iau2ycs
+    password: redisRoot123
 # 配置mybatis
 mybatis:
   mapper-locations: classpath:/mapper/**/*.xml
